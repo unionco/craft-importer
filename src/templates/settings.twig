@@ -1,0 +1,26 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Import plugin for Craft CMS 3.x
+ *
+ * Import Settings.twig
+ *
+ * @author    UNION
+ * @copyright Copyright (c) 2018 UNION
+ * @link      https://bitbucket.org/unionco
+ * @package   Import
+ * @since     0.0.1
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("unionco\\import\\assetbundles\\import\\ImportAsset") %}
+
+{{ forms.textField({
+    label: 'Some Field',
+    instructions: 'Enter some setting here.',
+    id: 'someAttribute',
+    name: 'someAttribute',
+    value: settings['someAttribute']})
+}}

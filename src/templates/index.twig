@@ -1,0 +1,48 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Import plugin for Craft CMS 3.x
+ *
+ * Import index.twig
+ *
+ * @author    UNION
+ * @copyright Copyright (c) 2018 UNION
+ * @link      https://bitbucket.org/unionco
+ * @package   Import
+ * @since     0.0.1
+ */
+#}
+
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% do 
+    view.registerAssetBundle("unionco\\import\\assetbundles\\import\\ImportAsset") %}
+{% do 
+    view.registerAssetBundle("unionco\\import\\assetbundles\\indexcpsection\\IndexCPSectionAsset") %}
+
+{# Link for the ? icon at the bottom of the page #}
+{% set docsUrl = "https://github.com/x/import/blob/master/README.md" %}
+
+{# The title of this CP section #}
+{% set title = "Import" %}
+
+{# The URL to this plugin's base CP section #}
+{% set pluginCpUrl = url('import') %}
+
+{# Get a URL to an image in our AssetBundle #}
+{% set iconUrl = view.getAssetManager().getPublishedUrl('@unionco/import/assetbundles/indexcpsection/dist', true) ~ '/img/Index-icon.svg' %}
+
+{# Content that should appear in the page header#}
+{% set extraPageHeaderHtml %}
+<div class="buttons">
+    <a href="{{ pluginCpUrl }}" class="btn submit add icon">{{ "Click Me!"|t('import') }}</a>
+</div>
+{% endset %}
+
+{# The content of the CP Section#}
+{% set content %}
+<div data-import-plugin="true">
+    {% include 'import/_/components/fileUpload' %}
+</div>
+{% endset %}

@@ -1,0 +1,43 @@
+{
+    "name": "unionco/import",
+    "description": "Import data from a Craft 2 JSON export file",
+    "type": "craft-plugin",
+    "version": "0.0.1",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "import"
+    ],
+    "support": {
+        "docs": "https://github.com/x/import/blob/master/README.md",
+        "issues": "https://github.com/x/import/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "UNION",
+            "homepage": "https://bitbucket.org/unionco"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1"
+    },
+    "autoload": {
+        "psr-4": {
+          "unionco\\import\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Import",
+        "handle": "import",
+        "hasCpSettings": true,
+        "hasCpSection": true,
+        "changelogUrl": "https://raw.githubusercontent.com/x/import/master/CHANGELOG.md",
+        "components": {
+            "entry": "unionco\\import\\services\\Entry"
+        },
+        "class": "unionco\\import\\Import"
+    }
+}
