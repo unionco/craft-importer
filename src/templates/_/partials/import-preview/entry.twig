@@ -1,0 +1,9 @@
+{% import 'import/_/macros/fields' as fields %}
+<div class="ImportPreview-entry">
+    {% for field in entry.displayFields %}
+        <div class="ImportPreview-entry--field">
+            <div class="title">{{ field.name }}</div>
+            <div class="input">{{ fields.display(field) }}</div>
+        </div>
+    {% endfor %}
+</div>

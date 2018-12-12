@@ -1,0 +1,44 @@
+.ImportPreview {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: $btnBorderRadius;
+    border: 1px solid $hairlineColorAlpha;
+    padding: 6px;
+
+    &-entry {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 6px;
+        width: 100%;
+
+        border-radius: $btnBorderRadius;
+        border: 1px solid $hairlineColorAlpha;
+        background-color: $hairlineColor;
+
+        &--field {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            padding: 6px;
+
+            &>.title {
+                min-width: 30%;
+                text-align: center;
+            }
+            &>.input {
+                text-align: center;
+                min-width: 70%;
+
+                &>input[type='text'] {
+                    @include text-input-styles;
+                    width: 90%;
+                }
+            }
+        }
+    }
+}

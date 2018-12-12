@@ -15,6 +15,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use unionco\import\Import;
 use unionco\import\models\JsonFileImport;
+use unionco\import\models\ImportPreview;
 
 /**
  * Import Controller
@@ -92,6 +93,8 @@ class ImportController extends Controller
         $path = $storagePath . $file->baseName . '.' . $file->extension;
         $file->saveAs($path);
 
+        // parse the file into a useable format
+        // -- for now, just JSON
         $import = false;
         switch (strtolower($file->extension)) {
             case 'json':
@@ -101,10 +104,10 @@ class ImportController extends Controller
                 return;
         }
 
-        $entries = $import->getEntries();
+        $preview = new ImportPreview($import);
 
-        return $this->renderTemplate('import/_/components/fileImport', [
-            'entries' => $entries,
+        return $this->renderTemplate('import/_/components/importPreview', [
+            'preview' => $preview,
         ]);
     }
 }

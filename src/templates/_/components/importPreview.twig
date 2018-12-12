@@ -1,0 +1,12 @@
+<div class="ImportPreview">
+    {% if preview is not defined %}
+        <span>Error! No preview available</span>
+    {% else %}
+        {# <tr><td>{{ dump(preview.entries) }}</td></tr> #}
+        {% for index, entry in preview.entries %}
+            {% include 'import/_/partials/import-preview/entry' with {
+                entry: entry,
+            } only %}
+        {% endfor %}
+    {% endif %}
+</div>

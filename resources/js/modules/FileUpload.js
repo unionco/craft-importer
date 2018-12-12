@@ -17,6 +17,8 @@ class FileUpload {
         this.element.addEventListener('drop', this.dropHandler.bind(this));
         this.element.addEventListener('dragover', this.dragOverHandler.bind(this));
 
+        // Clear
+        document.querySelector('[data-import-file-clear]').addEventListener('click', this.clearFiles.bind(this));
         // Input type="file"
         this.input = document.querySelector('input[type="file"].FileUpload-input');
         if (this.input) {
@@ -84,8 +86,18 @@ class FileUpload {
         return;
     }
 
+    clearFiles() {
+        this.files = [];
+        this.updateLabel();
+        document.querySelector('[data-import-file-upload-result]').innerHTML = '';
+    }
+
     updateLabel() {
         this.label = '';
+        const labelSpan = document.querySelector('.FileUpload-input + label>span');
+        const instructionSpan = document.querySelector('[data-import-file-instructions]');
+        const clearSpan = document.querySelector('[data-import-file-clear]');
+
         if (this.files && this.files.length) {
             console.log(this.files);
             Array.prototype.forEach.call(this.files, file => {
@@ -94,10 +106,14 @@ class FileUpload {
                 }
                 this.label += file.name;
             })
+            instructionSpan.classList.add('hidden');
+            clearSpan.classList.remove('hidden');
         } else {
             this.label = 'Choose a file';
+            instructionSpan.classList.remove('hidden');
+            clearSpan.classList.add('hidden');
         }
-        document.querySelector('.FileUpload-input + label>span').innerText = this.label;
+        labelSpan.innerText = this.label;
     }
 }
 

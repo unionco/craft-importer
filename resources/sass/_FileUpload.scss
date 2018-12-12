@@ -2,16 +2,32 @@ $color-1: #fff;
 $color-2: #000;
 $color-3: #ff0000;
 @import '../../node_modules/craftcms-sass/src/mixins';
+
 .FileUpload {
     padding: 1rem;
-    border-radius: $paneBorderRadius;
-    border: 1px solid $hairlineColorAlpha;
-    background-color: $hairlineColor;
-    text-align: center;
 
     &-files {
-        &>span {
+        padding: 1rem;
+        border-radius: $paneBorderRadius;
+        border: 1px solid $hairlineColorAlpha;
+        background-color: $hairlineColor;
+        text-align: center;
+
+        &>[data-import-file-instructions] {
             padding: 6px;
+
+            &.hidden {
+                display: none;
+            }
+        }
+
+        &>[data-import-file-clear] {
+            padding: 6px;
+            cursor: pointer;
+
+            &.hidden {
+                display: none;
+            }
         }
     }
 
@@ -23,7 +39,7 @@ $color-3: #ff0000;
         position: absolute;
         z-index: -1;
 
-        & + label {
+        &+label {
             font-size: $font-sm;
             font-weight: 500;
             color: $white;
@@ -38,13 +54,13 @@ $color-3: #ff0000;
             height: 32px;
         }
 
-        &:focus + label,
-        & + label:hover {
+        &:focus+label,
+        &+label:hover {
             background-color: $color-3;
         }
     }
 
-    &-result {
-        
+    &-results {
+        padding: 1rem;
     }
 }

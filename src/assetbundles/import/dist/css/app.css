@@ -1,11 +1,20 @@
 .FileUpload {
-  padding: 1rem;
-  border-radius: 5px;
-  border: 1px solid rgba(0, 0, 20, 0.1);
-  background-color: #e3e5e8;
-  text-align: center; }
-  .FileUpload-files > span {
-    padding: 6px; }
+  padding: 1rem; }
+  .FileUpload-files {
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 20, 0.1);
+    background-color: #e3e5e8;
+    text-align: center; }
+    .FileUpload-files > [data-import-file-instructions] {
+      padding: 6px; }
+      .FileUpload-files > [data-import-file-instructions].hidden {
+        display: none; }
+    .FileUpload-files > [data-import-file-clear] {
+      padding: 6px;
+      cursor: pointer; }
+      .FileUpload-files > [data-import-file-clear].hidden {
+        display: none; }
   .FileUpload-input {
     width: 0.1px;
     height: 0.1px;
@@ -29,4 +38,41 @@
     .FileUpload-input:focus + label,
     .FileUpload-input + label:hover {
       background-color: #ff0000; }
+  .FileUpload-results {
+    padding: 1rem; }
+
+.ImportPreview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 20, 0.1);
+  padding: 6px; }
+  .ImportPreview-entry {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 6px;
+    width: 100%;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 20, 0.1);
+    background-color: #e3e5e8; }
+    .ImportPreview-entry--field {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      padding: 6px; }
+      .ImportPreview-entry--field > .title {
+        min-width: 30%;
+        text-align: center; }
+      .ImportPreview-entry--field > .input {
+        text-align: center;
+        min-width: 70%; }
+        .ImportPreview-entry--field > .input > input[type='text'] {
+          border: 1px solid rgba(0, 0, 20, 0.1);
+          border-radius: 2px;
+          transition: border linear 50ms;
+          width: 90%; }
 
