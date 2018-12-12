@@ -48,36 +48,7 @@ class ImportController extends Controller
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['index', 'do-something', 'upload'];
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Handle a request going to our plugin's index action URL,
-     * e.g.: actions/import/import
-     *
-     * @return mixed
-     */
-    public function actionIndex()
-    {
-        $result = 'Welcome to the ImportController actionIndex() method';
-
-        return $result;
-    }
-
-    /**
-     * Handle a request going to our plugin's actionDoSomething URL,
-     * e.g.: actions/import/import/do-something
-     *
-     * @return mixed
-     */
-    public function actionDoSomething()
-    {
-        $result = 'Welcome to the ImportController actionDoSomething() method';
-
-        return $result;
-    }
+    protected $allowAnonymous = ['upload', 'submit'];
 
     public function actionUpload()
     {
@@ -109,5 +80,10 @@ class ImportController extends Controller
         return $this->renderTemplate('import/_/components/importPreview', [
             'preview' => $preview,
         ]);
+    }
+
+    public function actionSubmit()
+    {
+        return json_encode(['Test' => 1234]);
     }
 }

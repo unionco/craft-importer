@@ -2,14 +2,13 @@
 
 namespace unionco\import\models;
 
-use Craft;
+use ReflectionClass;
 use craft\base\Model;
-use unionco\import\models\fields\Checkbox;
-use unionco\import\models\fields\Dropdown;
 use unionco\import\models\fields\AuthorDropdown;
+use unionco\import\models\fields\Checkbox;
 use unionco\import\models\fields\EntryTypeDropdown;
-use unionco\import\models\fields\SectionDropdown;
 use unionco\import\models\fields\PlainText;
+use unionco\import\models\fields\SectionDropdown;
 
 class ImportEntry extends Model
 {
@@ -82,7 +81,29 @@ class ImportEntry extends Model
         }
 
         foreach ($fields as $fieldName => $fieldValue) {
-            $result[$fieldName] = new PlainText($fieldName, print_r($fieldValue, true));
+            $value = false;
+            $type = false;
+
+            try {
+                $value = $fieldValue['value'];
+                $type = $fieldValue['type'];
+            } catch (\Exception $e) {
+                $value = $fieldValue;
+                $type = 'Matrix';
+            }
+
+            switch ($type) {
+                case 'Asset':
+                case 'PlainText':
+                case 'RichText':
+                    $reflectionClass = new ReflectionClass('\\unionco\\import\\models\\fields\\' . $type);
+                    $result[$fieldName] = $reflectionClass->newInstance($fieldName, $value);
+                    break;
+
+                default:
+                    $result[$fieldName] = new PlainText($fieldName, print_r($fieldValue, true));
+
+            }
         }
 
         return $result;

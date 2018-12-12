@@ -44,5 +44,8 @@
 {% set content %}
 <div data-import-plugin="true">
     {% include 'import/_/components/fileUpload' %}
+    {% include 'import/_/components/submit' with {
+        action: '/admin/import/submit',
+    } only %}
 </div>
 {% endset %}

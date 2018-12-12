@@ -75,4 +75,6 @@
           border-radius: 2px;
           transition: border linear 50ms;
           width: 90%; }
+        .ImportPreview-entry--field > .input > textarea {
+          width: 90%; }
 

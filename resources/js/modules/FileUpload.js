@@ -27,6 +27,8 @@ class FileUpload {
         if (this.input) {
             this.input.addEventListener('change', this.fileSelectHandler.bind(this));
         }
+
+        this.setSubmitEnabled(false);
     }
 
     upload() {
@@ -52,6 +54,8 @@ class FileUpload {
                     Array.prototype.forEach.call(entries, entry => {
                         new EntryPreview(entry);
                     });
+
+                    this.setSubmitEnabled(true);
                 }
             });
     }
@@ -98,6 +102,14 @@ class FileUpload {
         this.files = [];
         this.updateLabel();
         this.results.innerHTML = '';
+        this.setSubmitEnabled(false);
+    }
+
+    setSubmitEnabled(enabled) {
+        const submitButton = document.querySelector('[data-submit-button]');
+        if (submitButton) {
+            submitButton.dataset.valid = enabled ? '1' : '0';
+        }
     }
 
     updateLabel() {

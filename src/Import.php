@@ -104,6 +104,7 @@ class Import extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['import/upload'] = 'import/import/upload';
+                $event->rules['import/submit'] = 'import/import/submit';
             }
         );
 
