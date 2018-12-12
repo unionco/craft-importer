@@ -10,12 +10,11 @@
 
 namespace unionco\import\controllers;
 
-use unionco\import\Import;
-
 use Craft;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-
+use unionco\import\Import;
+use unionco\import\models\JsonFileImport;
 
 /**
  * Import Controller
@@ -81,8 +80,31 @@ class ImportController extends Controller
 
     public function actionUpload()
     {
-        $uploadedFile = UploadedFile::getInstancesByName('files');
+        $uploadedFiles = UploadedFile::getInstancesByName('files');
 
-        var_dump($uploadedFile); die;
+        $storagePath = Craft::$app->path->getStoragePath() . '/uploads/';
+        if (!is_dir($storagePath)) {
+            mkdir($storagePath);
+        }
+
+        // For now, just allow one file
+        $file = $uploadedFiles[0];
+        $path = $storagePath . $file->baseName . '.' . $file->extension;
+        $file->saveAs($path);
+
+        $import = false;
+        switch (strtolower($file->extension)) {
+            case 'json':
+                $import = new JsonFileImport($path);
+                break;
+            default:
+                return;
+        }
+
+        $entries = $import->getEntries();
+
+        return $this->renderTemplate('import/_/components/fileImport', [
+            'entries' => $entries,
+        ]);
     }
 }

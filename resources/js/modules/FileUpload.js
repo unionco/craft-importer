@@ -28,8 +28,11 @@ class FileUpload {
                 },
                 body: formData,
             })
-            .then(resp => resp.json())
-            .then(data => console.log(data));
+            .then(resp => resp.text())
+            .then(data => {
+                const container = document.querySelector('[data-import-file-upload-result]');
+                container.innerHTML = data;
+            });
     }
 }
 

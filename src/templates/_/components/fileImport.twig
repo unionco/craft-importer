@@ -1,0 +1,11 @@
+<table>
+    {% if entries is not defined %}
+        <tr><td>No entries</td></tr>
+    {% else %}
+        {% for entry in entries %}
+            <tr>
+                <td>{{ entry.id }}</td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+</table>
