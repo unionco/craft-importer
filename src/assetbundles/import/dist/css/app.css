@@ -1,3 +1,32 @@
-.Import {
-  background-color: #efefef; }
+.FileUpload {
+  padding: 1rem;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 20, 0.1);
+  background-color: #e3e5e8;
+  text-align: center; }
+  .FileUpload-files > span {
+    padding: 6px; }
+  .FileUpload-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1; }
+    .FileUpload-input + label {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #fff;
+      background-image: linear-gradient(#da5a47, #cc5643);
+      display: inline-block;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 2px;
+      border: none;
+      text-align: center;
+      box-sizing: border-box;
+      height: 32px; }
+    .FileUpload-input:focus + label,
+    .FileUpload-input + label:hover {
+      background-color: #ff0000; }
 

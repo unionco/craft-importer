@@ -2279,6 +2279,11 @@ cosmiconfig@^5.0.0:
     js-yaml "^3.9.0"
     parse-json "^4.0.0"
 
+craftcms-sass@^1.6.7:
+  version "1.6.7"
+  resolved "https://registry.yarnpkg.com/craftcms-sass/-/craftcms-sass-1.6.7.tgz#62ff70ee74814c77934e3c95420de6ede7140644"
+  integrity sha512-cjKw6QmcVyEZWQHgle4aSdB76qid3EWycntAMyn7ejgNIOuBkWckgtWTtkAWv6Q0CmaRMQfzFUKygy+UcP5ADQ==
+
 create-ecdh@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.3.tgz#c9111b6f33045c4697f144787f9254cdc77c45ff"
