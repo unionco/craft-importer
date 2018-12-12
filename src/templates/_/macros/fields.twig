@@ -1,10 +1,31 @@
-{% macro display(field) %}
+{% macro display(field, parentId) %}
+    {% import _self as fields %}
+    {% set id = field.name ~ "-" ~ parentId %}
     {% switch field.type %}
         {% case 'checkbox' %}
-            <input type="checkbox" name="{{ field.name }}" {% if field.value %} checked="checked" {% endif %}>
+            <input type="checkbox" id="{{ id }}" name="{{ field.name }}" {% if field.value %} checked="checked" {% endif %}>
         {% case 'text' %}
-            <input type="text" name="{{ field.name }}" value="{{ field.value }}"/>
+            {% if field.name == 'id' %}
+                {% set disabled = true %}
+            {% endif %}
+            <input type="text" id="{{ id }}" name="{{ field.name }}" value="{{ field.value }}" {% if disabled is defined and disabled %}disabled{% endif %}/>
+        {% case 'type' %}
+            {{ fields.dropdown(field, id) }}
+        {% case 'author' %}
+            {{ fields.dropdown(field, id) }}
+        {% case 'section' %}
+            {{ fields.dropdown(field, id) }}
+        {% case 'dropdown' %}
+            <select id="{{ id }}" data-select-{{ field.name }}>
+                {% for option in field.options %}
+                    <option value="{{ option.id }}">{{ option }} | {{ option.handle }}</option>
+                {% endfor %}
+            </select>
         {% default %}
 
     {% endswitch %}
+{% endmacro %}
+
+{% macro dropdown(field, id) %}
+    <select id="{{ id }}" data-value="{{ field.value|json_encode }}" data-name="{{ field.name }}" data-select-{{ field.type }}="{{ field.options|json_encode }}"></select>
 {% endmacro %}

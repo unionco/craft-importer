@@ -38,6 +38,10 @@
                     @include text-input-styles;
                     width: 90%;
                 }
+
+                &>select {
+                    
+                }
             }
         }
     }

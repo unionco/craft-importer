@@ -1,3 +1,5 @@
+import EntryPreview from './EntryPreview';
+
 const removeDragData = e => {
     if (e.dataTransfer.items) {
         e.dataTransfer.items.clear();
@@ -12,6 +14,7 @@ class FileUpload {
         this.uploadUrl = '/admin/import/upload';
         this.label = 'Choose a file';
         this.files = [];
+        this.results = document.querySelector('[data-import-file-upload-result]');
 
         // Drag/drop
         this.element.addEventListener('drop', this.dropHandler.bind(this));
@@ -43,8 +46,13 @@ class FileUpload {
             })
             .then(resp => resp.text())
             .then(data => {
-                const container = document.querySelector('[data-import-file-upload-result]');
-                container.innerHTML = data;
+                this.results.innerHTML = data;
+                const entries = document.querySelectorAll('.ImportPreview-entry');
+                if (entries && entries.length) {
+                    Array.prototype.forEach.call(entries, entry => {
+                        new EntryPreview(entry);
+                    });
+                }
             });
     }
 
@@ -89,7 +97,7 @@ class FileUpload {
     clearFiles() {
         this.files = [];
         this.updateLabel();
-        document.querySelector('[data-import-file-upload-result]').innerHTML = '';
+        this.results.innerHTML = '';
     }
 
     updateLabel() {

@@ -1,9 +1,19 @@
 {% import 'import/_/macros/fields' as fields %}
-<div class="ImportPreview-entry">
-    {% for field in entry.displayFields %}
+
+<div class="ImportPreview-entry" id="{{ entry.id.value }}">
+    <h1>Entry Fields</h1>
+    {% for title, field in entry.displayFields %}
         <div class="ImportPreview-entry--field">
-            <div class="title">{{ field.name }}</div>
-            <div class="input">{{ fields.display(field) }}</div>
+            <div class="title">{{ title }}</div>
+            <div class="input">{{ fields.display(field, entry.id.value) }}</div>
+        </div>
+    {% endfor %}
+    <hr>
+    <h2>Custom Fields</h2>
+    {% for title, field in entry.customFields %}
+        <div class="ImportPreview-entry--field">
+            <div class="title">{{ title }}</div>
+            <div class="input">{{ fields.display(field, entry.id.value) }}</div>
         </div>
     {% endfor %}
 </div>
