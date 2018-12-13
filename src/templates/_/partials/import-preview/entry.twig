@@ -8,6 +8,7 @@
             <div class="input">{{ fields.display(field, entry.id.value) }}</div>
         </div>
     {% endfor %}
+
     <hr>
     <h1>Custom Fields</h1>
     {% for title, field in entry.customFields %}
@@ -16,4 +17,13 @@
             <div class="input">{{ fields.display(field, entry.id.value) }}</div>
         </div>
     {% endfor %}
+
+    <hr>
+    <h1>Sites</h1>
+    {# {% for site in entry.sites %} #}
+        <div class="ImportPreview-entry--field">
+            <div class="title">Import into sites:</div>
+            <div class="input">{{ fields.siteSelection(entry.sites, entry.id.value) }}</div>
+        </div>
+    {# {% endfor %} #}
 </div>

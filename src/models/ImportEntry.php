@@ -2,6 +2,7 @@
 
 namespace unionco\import\models;
 
+use Craft;
 use ReflectionClass;
 use craft\base\Model;
 use unionco\import\models\fields\AuthorDropdown;
@@ -22,6 +23,7 @@ class ImportEntry extends Model
     public $expiryDate;
     public $author;
     public $fields;
+    public $sites;
 
     public static $defaultFields = [
         'id',
@@ -47,6 +49,7 @@ class ImportEntry extends Model
         $this->expiryDate = new PlainText('expiryDate', $data->expiryDate);
         $this->author = new AuthorDropdown('author', $data->author);
         $this->fields = static::parseFields($data);
+        $this->sites = Craft::$app->sites->getAllSites();
     }
 
     public function displayFields()
@@ -70,6 +73,11 @@ class ImportEntry extends Model
     {
         return $this->fields;
     }
+
+    // public function getSites()
+    // {
+    //     return Craft::$app->sites->getAllSites();
+    // }
 
     public static function parseFields($data)
     {

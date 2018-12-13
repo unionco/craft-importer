@@ -32,6 +32,18 @@
     {% endswitch %}
 {% endmacro %}
 
+{% macro siteSelection(sites, id) %}
+    {% import _self as fields %}
+    {# {{ dump(sites) }} #}
+    {% for site in sites %}
+        {% set name = 'sites[' ~ id ~ '][]' %}
+        {% set value = site.id %}
+        {% set id = 'sites-' ~ id ~ '-' ~ site.id %}
+        {% set label = site.name %}
+        {{ fields.checkbox(name, value, id, label) }}
+    {% endfor %}
+{% endmacro %}
+
 {% macro dropdown(field, id, name) %}
     <select 
         id="{{ id }}" 
@@ -54,4 +66,9 @@
         value="{{ field.value }}" 
         {% if disabled is defined and disabled %}disabled{% endif %}
         />
+{% endmacro %}
+
+{% macro checkbox(name, value, id, label) %}
+    <input type="checkbox" id="{{ id }}" name="{{ name }}" value="{{ value }}"/>
+    <label for="{{ id }}">{{ label }}</label>
 {% endmacro %}
