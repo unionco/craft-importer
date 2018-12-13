@@ -22,7 +22,8 @@
     <h1>Sites</h1>
     {# {% for site in entry.sites %} #}
         <div class="ImportPreview-entry--field">
-            <div class="title">Import into sites:</div>
+            {% set name = 'sites[' ~ entry.id.value ~ '][]' %}
+            <div class="title">Import into sites: <span data-select-all-sites="{{ name }}">Toggle All</a></div>
             <div class="input">{{ fields.siteSelection(entry.sites, entry.id.value) }}</div>
         </div>
     {# {% endfor %} #}

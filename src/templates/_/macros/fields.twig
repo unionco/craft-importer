@@ -32,13 +32,13 @@
     {% endswitch %}
 {% endmacro %}
 
-{% macro siteSelection(sites, id) %}
+{% macro siteSelection(sites, parentId) %}
     {% import _self as fields %}
     {# {{ dump(sites) }} #}
+    {% set name = 'sites[' ~ parentId ~ '][]' %}
     {% for site in sites %}
-        {% set name = 'sites[' ~ id ~ '][]' %}
         {% set value = site.id %}
-        {% set id = 'sites-' ~ id ~ '-' ~ site.id %}
+        {% set id = 'sites-' ~ parentId ~ '-' ~ site.id %}
         {% set label = site.name %}
         {{ fields.checkbox(name, value, id, label) }}
     {% endfor %}

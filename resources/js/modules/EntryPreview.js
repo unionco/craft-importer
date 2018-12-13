@@ -12,6 +12,10 @@ export default class EntryPreview {
         this.type = document.querySelector(`#type-${this.id}`);
 
         this.section.addEventListener('change', this.updateType.bind(this));
+        this.toggleSitesButton = document.querySelector(`[data-select-all-sites="sites[${this.id}][]"]`);
+        if (this.toggleSitesButton) {
+            this.toggleSitesButton.addEventListener('click', this.toggleSites.bind(this));
+        }
         this.initDropdowns();
     }
 
@@ -76,6 +80,17 @@ export default class EntryPreview {
         } else {
             console.log('Error');
             this.type.innerHTML = '';
+        }
+    }
+
+    toggleSites(e) {
+        const checkboxes = document.querySelectorAll(`input[name="sites[${this.id}][]`);
+        if (checkboxes && checkboxes.length) {
+            // Look at the first checkbox to see if we are checking/unchecking the rest of them
+            const checked = checkboxes[0].checked;
+            Array.prototype.forEach.call(checkboxes, checkbox => {
+                checkbox.checked = !checked;
+            });
         }
     }
 }
