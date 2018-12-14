@@ -32,29 +32,6 @@ use unionco\import\models\ImportEntry;
  */
 class EntryService extends Component
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * This function can literally be anything you want, and you can have as many service
-     * functions as you want
-     *
-     * From any other plugin file, call it like this:
-     *
-     *     Import::$plugin->entry->exampleService()
-     *
-     * @return mixed
-     */
-    public function exampleService()
-    {
-        $result = 'something';
-        // Check our Plugin's settings for `someAttribute`
-        if (Import::$plugin->getSettings()->someAttribute) {
-        }
-
-        return $result;
-    }
-
     public function updateOrCreate(ImportEntry $importEntry)
     {
         foreach ($importEntry->sites as $siteId) {
