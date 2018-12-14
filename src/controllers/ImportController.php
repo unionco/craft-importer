@@ -13,30 +13,12 @@ namespace unionco\import\controllers;
 use Craft;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use unionco\import\Import;
+use unionco\import\Import as ImportModule;
+use unionco\import\models\Import;
+use unionco\import\models\UserInput;
 use unionco\import\models\JsonFileImport;
 use unionco\import\models\ImportPreview;
 
-/**
- * Import Controller
- *
- * Generally speaking, controllers are the middlemen between the front end of
- * the CP/website and your plugin’s services. They contain action methods which
- * handle individual tasks.
- *
- * A common pattern used throughout Craft involves a controller action gathering
- * post data, saving it on a model, passing the model off to a service, and then
- * responding to the request appropriately depending on the service method’s response.
- *
- * Action methods begin with the prefix “action”, followed by a description of what
- * the method does (for example, actionSaveIngredient()).
- *
- * https://craftcms.com/docs/plugins/controllers
- *
- * @author    UNION
- * @package   Import
- * @since     0.0.1
- */
 class ImportController extends Controller
 {
 
@@ -79,11 +61,38 @@ class ImportController extends Controller
 
         return $this->renderTemplate('import/_/components/importPreview', [
             'preview' => $preview,
+            'file' => $path,
         ]);
     }
 
     public function actionSubmit()
     {
-        return json_encode(['Test' => 1234]);
+        $this->requirePostRequest();
+
+        $formData = Craft::$app->getRequest()->getBodyParams();
+
+        $importFilePath = $formData['importFile'];
+        $parts = explode('.', $importFilePath);
+        $length = count($parts);
+
+        $extension = $parts[$length-1];
+
+        switch (strtolower($extension)) {
+            case 'json':
+                $fileImport = new JsonFileImport($importFilePath);
+                break;
+            default:
+                return;
+        }
+
+        $userInput = new UserInput($formData);
+        if (!$userInput->valid()) {
+            throw new \Exception('invalid');
+        }
+
+        $import = new Import($fileImport, $userInput);
+        $result = $import->run();
+        
+        return json_encode($formData);
     }
 }

@@ -103,6 +103,8 @@ class Import extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
+                $event->rules['import/sections/new'] = 'import/section/new-section-modal';
+                $event->rules['import/sections/types/<id:\d+>'] = 'import/section/types';
                 $event->rules['import/upload'] = 'import/import/upload';
                 $event->rules['import/submit'] = 'import/import/submit';
             }
@@ -125,6 +127,10 @@ class Import extends Plugin
                 $e->roots[$this->id] = $baseDir;
             }
         });
+
+        $this->setComponents([
+            'entries' => \unionco\import\services\EntryService::class,
+        ]);
 
 /**
  * Logging in Craft involves using one of the following methods:

@@ -1,30 +1,57 @@
 {% import 'import/_/macros/fields' as fields %}
-
-<div class="ImportPreview-entry" id="{{ entry.id.value }}">
+{% import 'import/_includes/importForms' as importForms %}
+{% import '_includes/forms' as forms %}
+<div class="ImportPreview-entry" id="{{ entry.id }}">
     <h1>Entry Fields</h1>
-    {% for title, field in entry.displayFields %}
-        <div class="ImportPreview-entry--field">
-            <div class="title">{{ title }}</div>
-            <div class="input">{{ fields.display(field, entry.id.value) }}</div>
-        </div>
-    {% endfor %}
 
-    <hr>
-    <h1>Custom Fields</h1>
-    {% for title, field in entry.customFields %}
-        <div class="ImportPreview-entry--field">
-            <div class="title">{{ title }}</div>
-            <div class="input">{{ fields.display(field, entry.id.value) }}</div>
-        </div>
-    {% endfor %}
+    {{ forms.textField({
+        id: 'title-' ~ entry.id,
+        label: 'Title',
+        name: 'title[' ~ entry.id ~ ']',
+        value: entry.title,
+        required: true,
+    }) }}
 
-    <hr>
-    <h1>Sites</h1>
-    {# {% for site in entry.sites %} #}
-        <div class="ImportPreview-entry--field">
-            {% set name = 'sites[' ~ entry.id.value ~ '][]' %}
-            <div class="title">Import into sites: <span data-select-all-sites="{{ name }}">Toggle All</a></div>
-            <div class="input">{{ fields.siteSelection(entry.sites, entry.id.value) }}</div>
-        </div>
-    {# {% endfor %} #}
+    {{ forms.textField({
+        id: 'slug-' ~ entry.id,
+        label: 'Slug',
+        name: 'slug[' ~ entry.id ~ ']',
+        value: entry.slug,
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        id: 'section-' ~ entry.id,
+        label: 'Section',
+        name: 'section[' ~ entry.id ~ ']',
+        options: entry.getSections,
+        value: entry.section.id,
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        id: 'type-' ~ entry.id,
+        label: 'Entry Type',
+        name: 'type[' ~ entry.id ~ ']',
+        options: entry.getEntryTypes,
+        value: entry.type.id,
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        id: 'author-' ~ entry.id,
+        label: 'Author',
+        name: 'author[' ~ entry.id ~ ']',
+        options: entry.getAuthors,
+        value: entry.author.id,
+        required: true,
+    }) }}
+
+    {{ forms.multiselectField({
+        id: 'sites-' ~ entry.id,
+        label: 'Sites',
+        name: 'sites[' ~ entry.id ~ ']',
+        options: entry.getSites,
+        size: entry.getSites | length,
+    }) }}
 </div>

@@ -3,117 +3,91 @@
 namespace unionco\import\models;
 
 use Craft;
-use ReflectionClass;
 use craft\base\Model;
-use unionco\import\models\fields\AuthorDropdown;
-use unionco\import\models\fields\Checkbox;
-use unionco\import\models\fields\EntryTypeDropdown;
-use unionco\import\models\fields\PlainText;
-use unionco\import\models\fields\SectionDropdown;
+use ReflectionClass;
+use craft\elements\User;
 
 class ImportEntry extends Model
 {
     public $id;
     public $title;
     public $slug;
-    public $enabled;
     public $section;
     public $type;
-    public $postDate;
-    public $expiryDate;
     public $author;
-    public $fields;
     public $sites;
-
-    public static $defaultFields = [
-        'id',
-        'title',
-        'slug',
-        'enabled',
-        'section',
-        'type',
-        'postDate',
-        'expiryDate',
-        'author',
-    ];
 
     public function __construct($data)
     {
-        $this->id = new PlainText('id', $data->id);
-        $this->title = new PlainText('title', $data->title);
-        $this->slug = new PlainText('slug', $data->slug);
-        $this->enabled = new Checkbox('enabled', $data->enabled);
-        $this->section = new SectionDropdown('section', $data->section);
-        $this->type = new EntryTypeDropdown('type', $data->type);
-        $this->postDate = new PlainText('postDate', $data->postDate);
-        $this->expiryDate = new PlainText('expiryDate', $data->expiryDate);
-        $this->author = new AuthorDropdown('author', $data->author);
-        $this->fields = static::parseFields($data);
+        $this->id = $data->id;
+        $this->title = $data->title;
+        $this->slug = $data->slug;
+        $this->section = static::matchSection($data->section);
+        $this->type = static::matchEntryType($data->type);
+        $this->author = $data->author;
         $this->sites = Craft::$app->sites->getAllSites();
     }
 
-    public function displayFields()
+    public static function matchSection($sectionHandle)
     {
-        $fields = [
-            'ID' => $this->id,
-            'Title' => $this->title,
-            'Slug' => $this->slug,
-            'Enabled' => $this->enabled,
-            'Section' => $this->section,
-            'Type' => $this->type,
-            'Post Date' => $this->postDate,
-            'Expiry Date' => $this->expiryDate,
-            'Author' => $this->author,
-        ];
-
-        return $fields;
+        if ($section = Craft::$app->getSections()->getSectionByHandle($sectionHandle)) {
+            return $section;
+        }
+        return false;
     }
 
-    public function customFields()
+    public static function matchEntryType($entryTypeHandle)
     {
-        return $this->fields;
+        if ($entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle)) {
+            return $entryTypes[0];
+        }
+
+        return false;
     }
 
-    // public function getSites()
-    // {
-    //     return Craft::$app->sites->getAllSites();
-    // }
-
-    public static function parseFields($data)
+    public function getSections()
     {
-        $result = [];
+        return array_map(function ($section) {
+            return [
+                'name' => $section->name,
+                'value' => $section->id,
+                'label' => $section->name,
+            ];
+        }, Craft::$app->getSections()->getAllSections());
+    }
 
-        $fields = json_decode(json_encode($data), true);
-        foreach (static::$defaultFields as $defaultField) {
-            unset($fields[$defaultField]);
+    public function getEntryTypes()
+    {
+        if ($this->section) {
+            return array_map(function ($entryType) {
+                return [
+                    'name' => $entryType->name,
+                    'value' => $entryType->id,
+                    'label' => $entryType->name,
+                ];
+            }, Craft::$app->getSections()->getEntryTypesBySectionId($this->section->id));
         }
+        return [];
+    }
 
-        foreach ($fields as $fieldName => $fieldValue) {
-            $value = false;
-            $type = false;
-
-            try {
-                $value = $fieldValue['value'];
-                $type = $fieldValue['type'];
-            } catch (\Exception $e) {
-                $value = $fieldValue;
-                $type = 'Matrix';
-            }
-
-            switch ($type) {
-                case 'Asset':
-                case 'PlainText':
-                case 'RichText':
-                    $reflectionClass = new ReflectionClass('\\unionco\\import\\models\\fields\\' . $type);
-                    $result[$fieldName] = $reflectionClass->newInstance($fieldName, $value);
-                    break;
-
-                default:
-                    $result[$fieldName] = new PlainText($fieldName, print_r($fieldValue, true));
-
-            }
-        }
-
-        return $result;
+    public function getAuthors()
+    {
+        return array_map(function ($author) {
+            return [
+                'name' => $author->email,
+                'value' => $author->id,
+                'label' => $author->email,
+            ];
+        }, User::find()->all());
+    }
+    public function getSites()
+    {
+        return array_map(function ($site) {
+            return [
+                'name' => $site->name,
+                'value' => $site->id,
+                'label' => $site->name,
+            ];
+        }, Craft::$app->sites->getAllSites());
     }
 }

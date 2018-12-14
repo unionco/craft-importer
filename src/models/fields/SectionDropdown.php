@@ -14,6 +14,12 @@ class SectionDropdown extends Dropdown
         $this->type = 'section';
         $this->name = $name;
         $this->value = $value;
+        // $this->options = array_map(function ($section) {
+        //     return [
+        //         'value' => $section->id,
+        //         'label' => $section->name,
+        //     ];
+        // }, Craft::$app->getSections()->getAllSections());
         $this->options = Craft::$app->getSections()->getAllSections();
     }
 }

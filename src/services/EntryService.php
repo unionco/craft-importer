@@ -28,7 +28,7 @@ use craft\base\Component;
  * @package   Import
  * @since     0.0.1
  */
-class Entry extends Component
+class EntryService extends Component
 {
     // Public Methods
     // =========================================================================

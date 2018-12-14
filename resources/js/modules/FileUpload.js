@@ -1,4 +1,5 @@
 import EntryPreview from './EntryPreview';
+import { onInit as newSectionButton } from './NewSectionButton';
 
 const removeDragData = e => {
     if (e.dataTransfer.items) {
@@ -56,6 +57,15 @@ class FileUpload {
                     });
 
                     this.setSubmitEnabled(true);
+                    newSectionButton();
+
+                    const metaFields = document.querySelectorAll('[data-meta]');
+                    if (metaFields) {
+                        Array.prototype.forEach.call(metaFields, field => {
+                            console.log(field.innerText);
+                            eval(field.innerText);
+                        });
+                    }
                 }
             });
     }

@@ -54,5 +54,8 @@
   "main": "resources/js/Plugin.js",
   "repository": "https://bitbucket.org/unionco/plugin-craft3-import",
   "author": "Abry Rath <abry.rath@union.co>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "garnishjs": "^0.1.29"
+  }
 }

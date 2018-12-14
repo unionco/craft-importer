@@ -11,85 +11,58 @@ export default class EntryPreview {
         this.section = document.querySelector(`#section-${this.id}`);
         this.type = document.querySelector(`#type-${this.id}`);
 
-        this.section.addEventListener('change', this.updateType.bind(this));
-        this.toggleSitesButton = document.querySelector(`[data-select-all-sites="sites[${this.id}][]"]`);
-        if (this.toggleSitesButton) {
-            this.toggleSitesButton.addEventListener('click', this.toggleSites.bind(this));
-        }
         this.initDropdowns();
+        this.initMultiSelects();
     }
 
     initDropdowns() {
-        const dropdowns = document.querySelectorAll('[data-value]');
+        const dropdowns = document.querySelectorAll('select');
         if (dropdowns && dropdowns.length) {
             Array.prototype.forEach.call(dropdowns, dropdown => {
-                let value = JSON.parse(dropdown.dataset.value);
-                const name = dropdown.dataset.name;
-                const camelName = camelCase(`select ${name}`);
-                const options = JSON.parse(dropdown.dataset[camelName]);
-
-                let matches;
-                switch (name) {
-                    case 'author':
-                        value = value.email;
-                        // Try to match based on email
-                        matches = Array.prototype.filter.call(options, option => {
-                            //console.log(option.email);
-                            if (option.email == value) {
-                                return true;
-                            }
-                        });
-                        console.log(options);
-
-                        //console.log('possible matches: ', matches);
-                        break;
-                    case 'type':
-                        break;
+                const namePrefix = dropdown.name.replace(/\[[0-9]+\]/, '');
+                switch (namePrefix) {
                     case 'section':
-                        //const matches = Ar
+                        dropdown.addEventListener('change', this.updateType.bind(this));
                         break;
+                    default:
                 }
-
-                let optionsMarkup = '';
-                if (!matches || !matches.length) {
-                    optionsMarkup += `<option default value="new-${value}">${value} (New)</option>`;
-                }
-                Array.prototype.forEach.call(options, option => {
-                    let name = option.name;
-                    if (!name) {
-                        name = option.email;
-                    }
-                    optionsMarkup += `<option value="${option.id}">${name}</option>`;
-                });
-                dropdown.innerHTML = optionsMarkup;
             });
         }
     }
 
+    initMultiSelects() {
+        const multiSelectOptions = document.querySelectorAll('select[multiple]>option');
+        Array.prototype.forEach.call(multiSelectOptions, opt => {
+            opt.selected = true;
+        });
+    }
+
     updateType(e) {
         const newValue = parseInt(e.target.value);
-        const allTypes = JSON.parse(this.type.dataset.selectType);
-        // console.log(allTypes[newValue]);
-        const newTypes = allTypes[newValue];
-        if (newTypes) {
-            let options = '';
-            for (let i = 0; i < newTypes.length; i++) {
-                options += `<option value="${newTypes[i].id}">${newTypes[i].name}</option>`;
-            }
-            this.type.innerHTML = options;
-        } else {
-            console.log('Error');
-            this.type.innerHTML = '';
-        }
+        fetch(`/admin/import/sections/types/${newValue}`)
+            .then(resp => resp.json())
+            .then(data => {
+                const newTypes = data;
+                if (newTypes) {
+                    let options = '';
+                    for (let i = 0; i < newTypes.length; i++) {
+                        options += `<option value="${newTypes[i].id}">${newTypes[i].name}</option>`;
+                    }
+                    this.type.innerHTML = options;
+                } else {
+                    console.log('Error');
+                    this.type.innerHTML = '';
+                }
+            });
     }
 
     toggleSites(e) {
-        const checkboxes = document.querySelectorAll(`input[name="sites[${this.id}][]`);
-        if (checkboxes && checkboxes.length) {
+        const options = document.querySelectorAll(`select[name="sites[${this.id}][]"]>option`);
+        if (options && options.length) {
             // Look at the first checkbox to see if we are checking/unchecking the rest of them
-            const checked = checkboxes[0].checked;
-            Array.prototype.forEach.call(checkboxes, checkbox => {
-                checkbox.checked = !checked;
+            const selected = options[0].selected;
+            Array.prototype.forEach.call(options, option => {
+                option.selected = !selected;
             });
         }
     }

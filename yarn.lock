@@ -3978,6 +3978,11 @@ functional-red-black-tree@^1.0.1:
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
 
+garnishjs@^0.1.29:
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/garnishjs/-/garnishjs-0.1.29.tgz#90ddd0ad6d62064e2104dd346e0070fc9fc21e64"
+  integrity sha512-GKF/E9WzQNnbalgJiE60q58I91hpxLTLsP09ycmqob5QB+kHG1IWseIJ0g/Bsz57pbbQClb6hbiP6rXx3norYg==
+
 gauge@~2.7.3:
   version "2.7.4"
   resolved "https://registry.yarnpkg.com/gauge/-/gauge-2.7.4.tgz#2c03405c7538c39d7eb37b317022e325fb018bf7"
