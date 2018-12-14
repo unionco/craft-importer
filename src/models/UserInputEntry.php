@@ -6,7 +6,7 @@ use Craft;
 use craft\models\Section;
 use craft\base\Model;
 
-class EntryMeta extends Model
+class UserInputEntry extends Model
 {
     const SECTION_DNE = 'The section does not exist.';
     const TYPE_DNE = 'The entry type does not exist.';

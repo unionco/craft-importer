@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use ReflectionClass;
 use craft\elements\User;
+use unionco\import\models\UserInputEntry;
 
 class ImportEntry extends Model
 {
@@ -16,16 +17,22 @@ class ImportEntry extends Model
     public $type;
     public $author;
     public $sites;
+    public $enabled;
+    public $postDate;
+    public $expiryDate;
 
     public function __construct($data)
     {
-        $this->id = $data->id;
+        $this->id = intval($data->id);
         $this->title = $data->title;
         $this->slug = $data->slug;
         $this->section = static::matchSection($data->section);
         $this->type = static::matchEntryType($data->type);
         $this->author = $data->author;
         $this->sites = Craft::$app->sites->getAllSites();
+        $this->enabled = $data->enabled;
+        $this->postDate = $data->postDate; //->format('Y-m-d');
+        $this->expiryDate = $data->expiryDate; //->format('Y-m-d');
     }
 
     public static function matchSection($sectionHandle)
@@ -89,5 +96,19 @@ class ImportEntry extends Model
                 'label' => $site->name,
             ];
         }, Craft::$app->sites->getAllSites());
+    }
+
+    public function resolveDiff(UserInputEntry $input) : void
+    {
+        if ($input->section !== intval($this->section->id)) {
+            $this->section = Craft::$app->getSections()->getSectionById($input->section);
+        }
+
+        if ($input->type !== intval($this->type->id)) {
+            $this->type = Craft::$app->getSections()->getEntryTypeById($input->type);
+        }
+
+        // author
+        $this->sites = $input->sites;
     }
 }
