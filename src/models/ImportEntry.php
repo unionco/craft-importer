@@ -3,24 +3,13 @@
 namespace unionco\import\models;
 
 use Craft;
-use craft\base\Model;
 use ReflectionClass;
 use craft\elements\User;
+use unionco\import\models\AbstractEntry;
 use unionco\import\models\UserInputEntry;
 
-class ImportEntry extends Model
+class ImportEntry extends AbstractEntry
 {
-    public $id;
-    public $title;
-    public $slug;
-    public $section;
-    public $type;
-    public $author;
-    public $sites;
-    public $enabled;
-    public $postDate;
-    public $expiryDate;
-
     public function __construct($data)
     {
         $this->id = intval($data->id);

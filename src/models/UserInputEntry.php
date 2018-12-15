@@ -4,9 +4,9 @@ namespace unionco\import\models;
 
 use Craft;
 use craft\models\Section;
-use craft\base\Model;
+use unionco\import\models\AbstractEntry;
 
-class UserInputEntry extends Model
+class UserInputEntry extends AbstractEntry
 {
     const SECTION_DNE = 'The section does not exist.';
     const TYPE_DNE = 'The entry type does not exist.';
