@@ -16,6 +16,7 @@ use craft\elements\Entry;
 use DateTime;
 use unionco\import\Import;
 use unionco\import\models\ImportEntry;
+use unionco\import\models\EntryResult;
 use craft\elements\MatrixBlock;
 /**
  * Entry Service
@@ -32,8 +33,12 @@ use craft\elements\MatrixBlock;
  */
 class EntryService extends Component
 {
-    public function updateOrCreate(ImportEntry $importEntry)
+    public $currentEntry;
+
+    public function updateOrCreate(ImportEntry $importEntry) : EntryResult
     {
+        $this->currentEntry = new EntryResult($importEntry);
+
         foreach ($importEntry->sites as $siteId) {
             $entry = Entry::find()
                 ->sectionId($importEntry->section->id)
@@ -59,11 +64,12 @@ class EntryService extends Component
                 try {
                     Craft::$app->getElements()->saveElement($entry, false);
                 } catch (\Exception $e) {
-                    var_dump($e->getMessage());
-                    die;
+                    $this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
                 }
             }
         }
+        $this->currentEntry->setSuccess(true);
+        return $this->currentEntry;
     }
 
     // TODO update all of the methods below
@@ -79,20 +85,20 @@ class EntryService extends Component
 
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
-
+            
             if (!isset($params->fields->{$field->handle})) {
-                echo "Property {$field->handle} doesn't exist on entry: {$entry->title} \n";
+                $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
             } else {
-                echo "      Saving Entry Field: {$fieldType} -> {$field->handle}\n";
+                $this->currentEntry->logMsg("Saving Entry Field: {$fieldType} -> {$field->handle}");
                 switch ($fieldType) {
                     case 'Assets':
                         // if ($relationships) {
                         $folderId = $field->resolveDynamicPathToFolderId();
+                        $fieldId = $field->id;
                         $assets = $params->fields->{$field->handle}->value;
-                        $entry->{$field->handle} = array_map(function ($url) use ($folderId, $assetService) {
-                            return $assetService->save($folderId, $url);
+                        $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                            return $assetService->save($folderId, $fieldId, $url);
                         }, $assets);
-                        // }
                         break;
                     case 'Matrix':
                         $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
@@ -101,7 +107,7 @@ class EntryService extends Component
                     case 'Entries':
                         if ($relationships) {
                             $entry->{$field->handle} = array_map(function ($e) {
-                                echo "          Attempt to save related entry: {$e->id}\n";
+                                $this->currentEntry->logMsg("Attempt to save related entry: {$e->id}");
                                 $entryService = new EntryService();
                                 $entryService->site = $this->site;
                                 $entryService->oldSite = $this->oldSite;
@@ -115,7 +121,7 @@ class EntryService extends Component
                     case 'Categories':
                         if ($relationships) {
                             $cats = array_map(function ($e) {
-                                echo "          Attempt to save related category: {$e->id}\n";
+                                $this->currentEntry->logMsg("Attempt to save related category: {$e->id}");
                                 $catService = new CategoryService();
                                 $catService->site = $this->site;
                                 $catService->oldSite = $this->oldSite;
@@ -123,7 +129,7 @@ class EntryService extends Component
                                 $category = $catService->getCategory($e);
                                 return $catService->updateOrCreate($category);
                             }, $params->fields->{$field->handle} ?? []);
-                            echo "      Cats to save: " . count($cats) . "\n";
+                            $this->currentEntry->logMsg("Cats to save: " . count($cats));
                             $entry->{$field->handle} = $cats ?? [];
                         }
                         break;
@@ -139,13 +145,14 @@ class EntryService extends Component
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
                     case 'Date':
-                        $entry->{$field->handle} = $params->fields->{$field->handle};
+                        $value = $params->fields->{$field->handle}->value;
+                        $entry->{$field->handle} = $value;
                         break;
                     case 'IMapFieldType':
                         $entry->{$field->handle} = $params->fields->{$field->handle};
                         break;
                     case 'Lightswitch':
-                        $entry->{$field->handle} = (bool) $params->fields->{$field->handle};
+                        $entry->{$field->handle} = (bool) $params->fields->{$field->handle}->value;
                 }
             }
         }
@@ -175,7 +182,7 @@ class EntryService extends Component
             $newSiteBlockType = $findBlockTypeByHandle($props);
 
             if ($newSiteBlockType) {
-                echo "          Matrix Block Found: {$newSiteBlockType->handle}\n";
+                $this->currentEntry->logMsg("Matrix Block Found: {$newSiteBlockType->handle}");
 
                 $fields = $newSiteBlockType->getFields();
 
@@ -190,24 +197,27 @@ class EntryService extends Component
                         ->owner($entry)
                         ->one();
 
-                    echo "              Saving Matrix Field: {$fieldType} -> {$blockField->handle}\n";
+                    $this->currentEntry->logMsg("Saving Matrix Field: {$fieldType} -> {$blockField->handle}");
 
                     if (!isset($block->$props->{$blockField->handle})) {
-                        echo "              Property {$field->handle} doesn't exist on entry: {$entry->title} \n";
+                        $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
                     } else {
                         switch ($fieldType) {
                             case 'Assets':
                                 // if ($relationships) {
                                 $folderId = $blockField->resolveDynamicPathToFolderId();
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($url) use ($folderId, $assetService) {
-                                    return $assetService->save($folderId, $url);
-                                }, $block->$props->{$blockField->handle});
+                                $fieldId = $blockField->id;
+                                $values = $block->image->images->value ?? [];
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                                    return $assetService->save($folderId, $fieldId, $url);
+                                }, $values);
+                                    //}, $block->$props->{$blockField->handle});
                                 // }
                                 break;
                             case 'Entries':
                                 if ($relationships) {
                                     $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($e) {
-                                        echo "                  Attempt to save related entry: {$e->id}\n";
+                                        $this->currentEntry->logMsg("Attempt to save related entry: {$e->id}");
                                         $entryService = new EntryService();
                                         $entryService->site = $this->site;
                                         $entryService->oldSite = $this->oldSite;
@@ -221,7 +231,7 @@ class EntryService extends Component
                             case 'Categories':
                                 if ($relationships) {
                                     $cats = array_map(function ($e) {
-                                        echo "                  Attempt to save related category: {$e->id}\n";
+                                        $this->currentEntry->logMsg("Attempt to save related category: {$e->id}");
                                         $catService = new CategoryService();
                                         $catService->site = $this->site;
                                         $catService->oldSite = $this->oldSite;
@@ -230,7 +240,7 @@ class EntryService extends Component
                                         return $catService->updateOrCreate($category);
                                     }, $block->$props->{$blockField->handle} ?? []);
 
-                                    echo "              Cats to save: " . count($cats) . "\n";
+                                    $this->currentEntry->logMsg("Cats to save: " . count($cats));
                                     $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $cats ?? [];
                                 }
                                 break;
@@ -248,7 +258,8 @@ class EntryService extends Component
                             case 'Dropdown':
                             case 'BrandColorsFieldType':
                             case 'ParentChannelFieldType':
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
+                                $value = $block->$props->{$blockField->handle}->value;
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
                                 break;
                             default:
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
@@ -256,7 +267,7 @@ class EntryService extends Component
                     }
                 }
             } else {
-                echo "          Matrix Block Not Found: {$props}\n";
+                $this->currentEntry->logMsg("Matrix Block Not Found: {$props}");
             }
         }
 

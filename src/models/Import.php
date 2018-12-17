@@ -25,15 +25,22 @@ class Import extends Model implements Runnable
         $service = ImportPlugin::$plugin->entries;
 
         $entries = $this->merge();
+        $results = [];
 
+        $count = count($entries);
+        $index = 1;
+        //echo "Starting import of {$count} entries" . PHP_EOL;
         foreach ($entries as $entry) {
             $result = $service->updateOrCreate($entry);
-            if (!$result) {
+            if (!$result->success) {
                 throw new \Exception('Import failed');
             }
+            //echo "Finished entry {$index}" . PHP_EOL;
+            $index++;
+            $results[] = $result;
         }
 
-        return 0;
+        return $results;
     }
 
     private function merge()

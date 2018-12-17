@@ -93,6 +93,6 @@ class ImportController extends Controller
         $import = new Import($fileImport, $userInput);
         $result = $import->run();
         
-        return json_encode($formData);
+        return json_encode($result);
     }
 }

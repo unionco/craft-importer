@@ -13,7 +13,7 @@ use craft\db\Query;
 
 class AssetService extends Component
 {
-    protected $fieldId = 117;
+    protected $fieldId = 0;
     protected $folderId = 6; // optional with fieldId and elementId
     protected $elementId = null;
     protected $query;
@@ -61,12 +61,12 @@ class AssetService extends Component
     /**
      * 
      */
-    public function save($folderId, $url)
+    public function save($folderId, $fieldId, $url)
     {
         $url = explode("?", $url)[0];
         
         try {
-            $image = $this->importFile($url, $folderId);
+            $image = $this->importFile($url, $folderId, $fieldId);
 
             if (isset($image->assetId)) {
                 return $image->assetId;
@@ -77,7 +77,7 @@ class AssetService extends Component
         return null;
     }
 
-    public function importFile($url, $folderId)
+    public function importFile($url, $folderId, $fieldId)
     {
         // 
         $this->folderId = $folderId;
@@ -93,14 +93,14 @@ class AssetService extends Component
 
         $this->save_remote_file($url, $tempPath);
 
-        if (empty($this->folderId) && (empty($this->fieldId) || empty($this->elementId))) {
+        if (empty($this->folderId) && (empty($fieldId) || empty($this->elementId))) {
             throw new Exception('No target destination provided for uploading');
         }
 
         $assets = Craft::$app->getAssets();
 
         if (empty($this->folderId)) {
-            $field = Craft::$app->getFields()->getFieldById((int)$this->fieldId);
+            $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
             if (!($field instanceof AssetsField)) {
                 throw new Exception('The field provided is not an Assets field');
