@@ -5,23 +5,13 @@ namespace unionco\import\models;
 use Craft;
 use craft\models\Section;
 use unionco\import\models\AbstractEntry;
+use unionco\import\interfaces\Skippable;
 
-class UserInputEntry extends AbstractEntry
+class UserInputEntry extends AbstractEntry implements Skippable
 {
-    const SECTION_DNE = 'The section does not exist.';
-    const TYPE_DNE = 'The entry type does not exist.';
-
     public static $newSections = [];
     public static $newTypes = [];
     public static $newAuthors = [];
-
-    public $id;
-    // public $title;
-    // public $slug;
-    public $section;
-    public $type;
-    public $author;
-    public $sites;
 
     public $skip;
     public $skipMessage;
@@ -118,5 +108,15 @@ class UserInputEntry extends AbstractEntry
     public function isValid()
     {
         return false;
+    }
+
+    public function skipped() : bool
+    {
+        return $this->skip;
+    }
+
+    public function getSkipMessage(): string
+    {
+        return $this->skipMessage;
     }
 }

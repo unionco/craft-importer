@@ -12,6 +12,7 @@ class Import extends Model implements Runnable
 {
     protected $fileImport;
     protected $userInput;
+    protected $results;
     
     public function __construct(FileImport $fileImport, UserInput $userInput)
     {
@@ -28,7 +29,7 @@ class Import extends Model implements Runnable
         foreach ($entries as $entry) {
             $result = $service->updateOrCreate($entry);
             if (!$result) {
-                throw new \Exception('error');
+                throw new \Exception('Import failed');
             }
         }
 
@@ -50,6 +51,9 @@ class Import extends Model implements Runnable
             $userEntry = null;
             foreach ($userEntries as $userEntryCandidate) {
                 if ($userEntryCandidate->id == $entry->id) {
+                    if ($userEntryCandidate->skipped()) {
+
+                    }
                     $userEntry = $userEntryCandidate;
                     break;
                 }

@@ -130,6 +130,8 @@ class Import extends Plugin
 
         $this->setComponents([
             'entries' => \unionco\import\services\EntryService::class,
+            'assets' => \unionco\import\services\AssetService::class,
+            'tags' => \unionco\import\services\TagService::class,
         ]);
 
 /**

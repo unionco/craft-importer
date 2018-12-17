@@ -2,11 +2,11 @@
 
 namespace unionco\import\models;
 
-use craft\base\models;
+use craft\base\Model;
 
 class AbstractEntry extends Model
 {
-        public $id;
+    public $id;
     public $title;
     public $slug;
     public $section;

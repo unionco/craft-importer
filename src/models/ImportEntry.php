@@ -10,6 +10,8 @@ use unionco\import\models\UserInputEntry;
 
 class ImportEntry extends AbstractEntry
 {
+    public $fields;
+
     public function __construct($data)
     {
         $this->id = intval($data->id);
@@ -22,6 +24,21 @@ class ImportEntry extends AbstractEntry
         $this->enabled = $data->enabled;
         $this->postDate = $data->postDate; //->format('Y-m-d');
         $this->expiryDate = $data->expiryDate; //->format('Y-m-d');
+        $this->setFields($data);
+    }
+
+    public function setFields($data)
+    {
+        unset($data->id);
+        unset($data->title);
+        unset($data->slug);
+        unset($data->enabled);
+        unset($data->section);
+        unset($data->type);
+        unset($data->author);
+        unset($data->postDate);
+        unset($data->expiryDate);
+        $this->fields = $data;
     }
 
     public static function matchSection($sectionHandle)
@@ -87,7 +104,7 @@ class ImportEntry extends AbstractEntry
         }, Craft::$app->sites->getAllSites());
     }
 
-    public function resolveDiff(UserInputEntry $input) : void
+    public function resolveDiff(AbstractEntry $input) : void
     {
         if ($input->section !== intval($this->section->id)) {
             $this->section = Craft::$app->getSections()->getSectionById($input->section);

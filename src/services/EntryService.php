@@ -16,7 +16,7 @@ use craft\elements\Entry;
 use DateTime;
 use unionco\import\Import;
 use unionco\import\models\ImportEntry;
-
+use craft\elements\MatrixBlock;
 /**
  * Entry Service
  *
@@ -52,8 +52,8 @@ class EntryService extends Component
                 $entry->enabledForSite = $importEntry->enabled;
                 $entry->postDate = DateTime::createFromFormat('Y-m-d', $importEntry->postDate);
                 $entry->expiryDate = isset($importEntry->expiryDate)
-                ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
-                : null;
+                    ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
+                    : null;
                 $this->populateElementFields($entry, $importEntry, false);
 
                 try {
@@ -74,13 +74,13 @@ class EntryService extends Component
         $fields = $fieldLayout->getFields();
 
         // services handle
-        $assetService = UnionModule::$instance->assets;
-        $tagService = UnionModule::$instance->tags;
+        $assetService = Import::$plugin->assets;
+        $tagService = Import::$plugin->tags;
 
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
 
-            if (!isset($params->{$field->handle})) {
+            if (!isset($params->fields->{$field->handle})) {
                 echo "Property {$field->handle} doesn't exist on entry: {$entry->title} \n";
             } else {
                 echo "      Saving Entry Field: {$fieldType} -> {$field->handle}\n";
@@ -88,13 +88,14 @@ class EntryService extends Component
                     case 'Assets':
                         // if ($relationships) {
                         $folderId = $field->resolveDynamicPathToFolderId();
+                        $assets = $params->fields->{$field->handle}->value;
                         $entry->{$field->handle} = array_map(function ($url) use ($folderId, $assetService) {
                             return $assetService->save($folderId, $url);
-                        }, $params->{$field->handle});
+                        }, $assets);
                         // }
                         break;
                     case 'Matrix':
-                        $matrix = $this->populateMatrixFields($params->{$field->handle}, $field, $entry, $relationships);
+                        $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
                         $entry->{$field->handle} = $matrix ?? null;
                         break;
                     case 'Entries':
@@ -108,7 +109,7 @@ class EntryService extends Component
 
                                 $entry = $entryService->getEntry($e);
                                 return $entryService->updateOrCreate($entry);
-                            }, $params->{$field->handle});
+                            }, $params->fields->{$field->handle});
                         }
                         break;
                     case 'Categories':
@@ -121,16 +122,16 @@ class EntryService extends Component
 
                                 $category = $catService->getCategory($e);
                                 return $catService->updateOrCreate($category);
-                            }, $params->{$field->handle} ?? []);
+                            }, $params->fields->{$field->handle} ?? []);
                             echo "      Cats to save: " . count($cats) . "\n";
                             $entry->{$field->handle} = $cats ?? [];
                         }
                         break;
                     case 'Tags':
-                        $entry->{$field->handle} = $tagService->saveTags($params->{$field->handle});
+                        $entry->{$field->handle} = $tagService->saveTags($params->fields->{$field->handle});
                         break;
                     case 'Table':
-                        $entry->{$field->handle} = json_encode($params->{$field->handle});
+                        $entry->{$field->handle} = json_encode($params->fields->{$field->handle});
                         break;
                     case 'Field':
                     case 'PlainText':
@@ -138,13 +139,13 @@ class EntryService extends Component
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
                     case 'Date':
-                        $entry->{$field->handle} = $params->{$field->handle};
+                        $entry->{$field->handle} = $params->fields->{$field->handle};
                         break;
                     case 'IMapFieldType':
-                        $entry->{$field->handle} = $params->{$field->handle};
+                        $entry->{$field->handle} = $params->fields->{$field->handle};
                         break;
                     case 'Lightswitch':
-                        $entry->{$field->handle} = (bool) $params->{$field->handle};
+                        $entry->{$field->handle} = (bool) $params->fields->{$field->handle};
                 }
             }
         }
@@ -153,8 +154,8 @@ class EntryService extends Component
     public function populateMatrixFields(array $blocks, $field, $entry, $relationships = false)
     {
         // services handle
-        $assetService = UnionModule::$instance->assets;
-        $tagService = UnionModule::$instance->tags;
+        $assetService = Import::$plugin->assets;
+        $tagService = Import::$plugin->tags;
 
         $blockTypes = $field->getBlockTypes();
 
@@ -178,14 +179,14 @@ class EntryService extends Component
 
                 $fields = $newSiteBlockType->getFields();
 
-                $newBlocks[$oldValue ?? "new" . ($key + 1)]['type'] = $props;
-                $newBlocks[$oldValue ?? "new" . ($key + 1)]['enabled'] = true;
+                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['type'] = $props;
+                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['enabled'] = true;
 
                 foreach ($fields as $blockField) {
                     $fieldType = (new \ReflectionClass($blockField))->getShortName();
 
                     $oldValue = MatrixBlock::find()
-                        ->fieldId($newSiteBlockType->id)
+                        ->fieldId($newSiteBlockType->fieldId)
                         ->owner($entry)
                         ->one();
 
@@ -198,14 +199,14 @@ class EntryService extends Component
                             case 'Assets':
                                 // if ($relationships) {
                                 $folderId = $blockField->resolveDynamicPathToFolderId();
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = array_map(function ($url) use ($folderId, $assetService) {
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($url) use ($folderId, $assetService) {
                                     return $assetService->save($folderId, $url);
                                 }, $block->$props->{$blockField->handle});
                                 // }
                                 break;
                             case 'Entries':
                                 if ($relationships) {
-                                    $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = array_map(function ($e) {
+                                    $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($e) {
                                         echo "                  Attempt to save related entry: {$e->id}\n";
                                         $entryService = new EntryService();
                                         $entryService->site = $this->site;
@@ -230,27 +231,27 @@ class EntryService extends Component
                                     }, $block->$props->{$blockField->handle} ?? []);
 
                                     echo "              Cats to save: " . count($cats) . "\n";
-                                    $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = $cats ?? [];
+                                    $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $cats ?? [];
                                 }
                                 break;
                             case 'Tags':
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = $tagService->saveTags($block->$props->{$blockField->handle});
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $tagService->saveTags($block->$props->{$blockField->handle});
                                 break;
                             case 'Table':
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = json_encode($block->$props->{$blockField->handle});
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = json_encode($block->$props->{$blockField->handle});
                                 break;
                             case 'Lightswitch';
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = (bool) $block->$props->{$blockField->handle};
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = (bool) $block->$props->{$blockField->handle};
                                 break;
                             case 'Field':
                             case 'PlainText':
                             case 'Dropdown':
                             case 'BrandColorsFieldType':
                             case 'ParentChannelFieldType':
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
                                 break;
                             default:
-                                $newBlocks[$oldValue ?? "new" . ($key + 1)]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
                         }
                     }
                 }
