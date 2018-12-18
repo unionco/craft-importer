@@ -10,9 +10,20 @@ export default class EntryPreview {
         this.id = node.id;
         this.section = document.querySelector(`#section-${this.id}`);
         this.type = document.querySelector(`#type-${this.id}`);
+        
+        this.preview = node.children[0];
+        this.body = node.children[1];
+
+        if (this.preview && this.body) {
+            this.preview.addEventListener('click', this.toggleExpand.bind(this));
+        }
 
         this.initDropdowns();
         this.initMultiSelects();
+    }
+
+    toggleExpand() {
+        this.body.classList.toggle('active');
     }
 
     initDropdowns() {

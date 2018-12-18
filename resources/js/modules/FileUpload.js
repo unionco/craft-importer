@@ -1,5 +1,7 @@
 import EntryPreview from './EntryPreview';
-import { onInit as newSectionButton } from './NewSectionButton';
+import {
+    onInit as newSectionButton
+} from './NewSectionButton';
 
 const removeDragData = e => {
     if (e.dataTransfer.items) {
@@ -33,8 +35,13 @@ class FileUpload {
     }
 
     upload() {
+        if (window.ajaxSpinner) {
+            window.ajaxSpinner.show();
+            console.log('Ajax Spinner activated');
+        }
+
         const formData = new FormData();
-        
+
         Array.prototype.forEach.call(this.files, f => {
             formData.append('files[]', f, f.name);
         });
@@ -66,6 +73,15 @@ class FileUpload {
                             eval(field.innerText);
                         });
                     }
+
+                    if (window.submitButton) {
+                        window.submitButton.show();
+                    }
+                }
+            })
+            .finally(() => {
+                if (window.ajaxSpinner) {
+                    window.ajaxSpinner.hide();
                 }
             });
     }

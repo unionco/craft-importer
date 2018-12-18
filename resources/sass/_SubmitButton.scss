@@ -1,0 +1,6 @@
+.SubmitButton {
+    display: none;
+    &.active {
+        display: block;
+    }
+}

@@ -2,56 +2,61 @@
 {% import 'import/_includes/importForms' as importForms %}
 {% import '_includes/forms' as forms %}
 <div class="ImportPreview-entry" id="{{ entry.id }}">
-    <h1>Entry Fields</h1>
+    <div class="preview">
+        <span>ID: {{ entry.id }}</span>
+        <span>Title: {{ entry.title }}</span>
+    </div>
+    <div class="content">
 
-    {{ forms.textField({
-        id: 'title-' ~ entry.id,
-        label: 'Title',
-        name: 'title[' ~ entry.id ~ ']',
-        value: entry.title,
-        required: true,
-    }) }}
+        {{ forms.textField({
+            id: 'title-' ~ entry.id,
+            label: 'Title',
+            name: 'title[' ~ entry.id ~ ']',
+            value: entry.title,
+            required: true,
+        }) }}
 
-    {{ forms.textField({
-        id: 'slug-' ~ entry.id,
-        label: 'Slug',
-        name: 'slug[' ~ entry.id ~ ']',
-        value: entry.slug,
-        required: true,
-    }) }}
+        {{ forms.textField({
+            id: 'slug-' ~ entry.id,
+            label: 'Slug',
+            name: 'slug[' ~ entry.id ~ ']',
+            value: entry.slug,
+            required: true,
+        }) }}
 
-    {{ forms.selectField({
-        id: 'section-' ~ entry.id,
-        label: 'Section',
-        name: 'section[' ~ entry.id ~ ']',
-        options: entry.getSections,
-        value: entry.section.id,
-        required: true,
-    }) }}
+        {{ forms.selectField({
+            id: 'section-' ~ entry.id,
+            label: 'Section',
+            name: 'section[' ~ entry.id ~ ']',
+            options: entry.getSections,
+            value: entry.section.id,
+            required: true,
+        }) }}
 
-    {{ forms.selectField({
-        id: 'type-' ~ entry.id,
-        label: 'Entry Type',
-        name: 'type[' ~ entry.id ~ ']',
-        options: entry.getEntryTypes,
-        value: entry.type.id,
-        required: true,
-    }) }}
+        {{ forms.selectField({
+            id: 'type-' ~ entry.id,
+            label: 'Entry Type',
+            name: 'type[' ~ entry.id ~ ']',
+            options: entry.getEntryTypes,
+            value: entry.type.id,
+            required: true,
+        }) }}
 
-    {{ forms.selectField({
-        id: 'author-' ~ entry.id,
-        label: 'Author',
-        name: 'author[' ~ entry.id ~ ']',
-        options: entry.getAuthors,
-        value: entry.author.id,
-        required: true,
-    }) }}
+        {{ forms.selectField({
+            id: 'author-' ~ entry.id,
+            label: 'Author',
+            name: 'author[' ~ entry.id ~ ']',
+            options: entry.getAuthors,
+            value: entry.author.id,
+            required: true,
+        }) }}
 
-    {{ forms.multiselectField({
-        id: 'sites-' ~ entry.id,
-        label: 'Sites',
-        name: 'sites[' ~ entry.id ~ ']',
-        options: entry.getSites,
-        size: entry.getSites | length,
-    }) }}
+        {{ forms.multiselectField({
+            id: 'sites-' ~ entry.id,
+            label: 'Sites',
+            name: 'sites[' ~ entry.id ~ ']',
+            options: entry.getSites,
+            size: entry.getSites | length,
+        }) }}
+    </div>
 </div>

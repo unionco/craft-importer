@@ -1,30 +1,10 @@
 {% import '_includes/forms' as forms %}
 {% import 'import/_includes/importForms' as importForms %}
 <div class="ImportPreview">
+    <h1>Entries</h1>
     {% if preview is not defined %}
         <span>Error! No preview available</span>
     {% else %}
-        {# <tr><td>{{ dump(preview.entries) }}</td></tr> #}
-        {# {{ importForms.sectionSelectField({
-            label: "Test",
-            id: 'id',
-            name: 'name',
-            selectionLabel: "Choose"|t('app'),
-            limit: 1,
-            elementType: 'craft\elements\Entry',
-            sources: {
-                section: '12',
-            },
-            sourceElementId: '9',
-            viewMode: 'list'
-        }) }} #}
-
-        {# {{ forms.elementSelectField(
-            label: 'Element Select',
-            id: 'elementSelectField',
-            name: 'elementSelectField',
-
-        ) }} #}
         <input type="hidden" name="importFile" value="{{ file }}"/>
         {% for index, entry in preview.entries %}
             {% include 'import/_/partials/import-preview/entry' with {

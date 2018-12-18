@@ -1,17 +1,27 @@
 class SubmitButton {
     constructor(node) {
-        this.button = node;
-        this.submitUrl = this.button.dataset.submitButton;
+        this.container = node;
+        this.button = node.children[0];
+        this.action = node.children[1];
+        this.submitUrl = this.action.value;
         this.button.addEventListener('click', this.submit.bind(this));
     }
 
+    show() {
+        this.container.classList.add('active');
+    }
+
+    hide() {
+        this.container.classList.remove('active');
+    }
+
     submit(e) {
-        e.preventDefault();
-        if (!parseInt(this.button.dataset.valid)) {
-            console.log('Disabled');
-            return;
+        if (window.ajaxSpinner) {
+            window.ajaxSpinner.show();
         }
 
+        e.preventDefault();
+        
         const formData = this.serialize()
 
         fetch(this.submitUrl, {
@@ -25,6 +35,15 @@ class SubmitButton {
             .then(resp => resp.json())
             .then(data => {
                 console.log(data);
+                if (window.importResults) {
+                    window.importResults.parseResults(data);
+                }
+            })
+            .finally(() => {
+                if (window.ajaxSpinner) {
+                    window.ajaxSpinner.hide();
+                }
+                this.hide();
             });
 
     }
@@ -37,7 +56,7 @@ class SubmitButton {
             formData.append('importFile', file.value);
         }
         const allInputs = document.querySelectorAll('input,select');
-            //'.ImportPreview-entry--field>.input>*');
+        //'.ImportPreview-entry--field>.input>*');
         if (allInputs && allInputs.length) {
             Array.prototype.forEach.call(allInputs, input => {
                 if (input.disabled) {
@@ -64,10 +83,8 @@ class SubmitButton {
 }
 
 export const onInit = () => {
-    const submitButtons = document.querySelectorAll('[data-submit-button]');
-    if (submitButtons && submitButtons.length) {
-        Array.prototype.forEach.call(submitButtons, button => {
-            new SubmitButton(button);
-        });
+    const submitButton = document.querySelector('#submitButton');
+    if (submitButton) {
+        window.submitButton = new SubmitButton(submitButton);
     }
 };

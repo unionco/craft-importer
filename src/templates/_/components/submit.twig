@@ -1,1 +1,8 @@
-<button class="Button" data-submit-button="{{ action }}" data-valid="0">Submit</button>
+{% import "_includes/forms" as forms %}
+<div class="SubmitButton" id="submitButton">
+    <button class="Button btn submit">Submit</button>
+    {{ forms.hidden({
+        value: action,
+        id: 'submitButtonAction',
+    }) }}
+</div>

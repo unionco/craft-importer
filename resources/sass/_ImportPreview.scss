@@ -2,23 +2,47 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    margin: 2rem auto;
+    
+    //align-items: center;
 
-    border-radius: $btnBorderRadius;
-    border: 1px solid $hairlineColorAlpha;
-    padding: 6px;
+    // border-radius: $btnBorderRadius;
+    // border: 1px solid $hairlineColorAlpha;
+    // padding: 6px;
 
     &-entry {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        // justify-content: center;
+        // align-items: center;
         margin-bottom: 6px;
         width: 100%;
 
-        border-radius: $btnBorderRadius;
-        border: 1px solid $hairlineColorAlpha;
-        background-color: $hairlineColor;
+
+
+        & > .preview {
+            display: flex;
+            flex-direction: row;
+            padding: 2rem;
+            cursor: pointer;
+            border-radius: $btnBorderRadius;
+            border: 1px solid $hairlineColorAlpha;
+            background-color: $hairlineColor;
+            
+            & > span {
+                margin: 0 2rem;
+            }
+        }
+
+        & > .content {
+            transition: max-height 300ms ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+
+            &.active {
+                max-height: 800px;
+            }
+        }
 
         &--field {
             width: 100%;

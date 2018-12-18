@@ -38,27 +38,33 @@
     .FileUpload-input:focus + label,
     .FileUpload-input + label:hover {
       background-color: #ff0000; }
-  .FileUpload-results {
-    padding: 1rem; }
 
 .ImportPreview {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  border-radius: 2px;
-  border: 1px solid rgba(0, 0, 20, 0.1);
-  padding: 6px; }
+  margin: 2rem auto; }
   .ImportPreview-entry {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     margin-bottom: 6px;
-    width: 100%;
-    border-radius: 2px;
-    border: 1px solid rgba(0, 0, 20, 0.1);
-    background-color: #e3e5e8; }
+    width: 100%; }
+    .ImportPreview-entry > .preview {
+      display: flex;
+      flex-direction: row;
+      padding: 2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 20, 0.1);
+      background-color: #e3e5e8; }
+      .ImportPreview-entry > .preview > span {
+        margin: 0 2rem; }
+    .ImportPreview-entry > .content {
+      transition: max-height 300ms ease-in-out;
+      max-height: 0;
+      overflow: hidden; }
+      .ImportPreview-entry > .content.active {
+        max-height: 800px; }
     .ImportPreview-entry--field {
       width: 100%;
       display: flex;
@@ -77,4 +83,73 @@
           width: 90%; }
         .ImportPreview-entry--field > .input > textarea {
           width: 90%; }
+
+.ImportResult {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 2rem auto; }
+  .ImportResult-entry {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+    width: 100%; }
+    .ImportResult-entry > .preview {
+      display: flex;
+      flex-direction: row;
+      padding: 2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 20, 0.1);
+      background-color: #e3e5e8; }
+      .ImportResult-entry > .preview::after {
+        content: 'Click to see log'; }
+      .ImportResult-entry > .preview.success {
+        border-color: #00b007; }
+        .ImportResult-entry > .preview.success::before {
+          content: 'Success'; }
+      .ImportResult-entry > .preview.fail {
+        border-color: #da5a47; }
+        .ImportResult-entry > .preview.fail::before {
+          content: 'Error!'; }
+      .ImportResult-entry > .preview > span {
+        margin: 0 2rem;
+        color: black; }
+    .ImportResult-entry > .content {
+      transition: max-height 300ms ease-in-out;
+      max-height: 0;
+      overflow: hidden; }
+      .ImportResult-entry > .content.active {
+        max-height: 800px; }
+
+.log-info {
+  font-family: monospace;
+  color: black; }
+
+.log-error {
+  font-family: monospace;
+  color: #da5a47; }
+
+.SubmitButton {
+  display: none; }
+  .SubmitButton.active {
+    display: block; }
+
+.AjaxSpinner-modal {
+  display: none; }
+  .AjaxSpinner-modal.active {
+    display: block;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.3);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2; }
+    .AjaxSpinner-modal.active > .content {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center; }
 
