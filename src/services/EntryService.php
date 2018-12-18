@@ -13,11 +13,12 @@ namespace unionco\import\services;
 use Craft;
 use craft\base\Component;
 use craft\elements\Entry;
+use craft\elements\MatrixBlock;
 use DateTime;
 use unionco\import\Import;
-use unionco\import\models\ImportEntry;
 use unionco\import\models\EntryResult;
-use craft\elements\MatrixBlock;
+use unionco\import\models\ImportEntry;
+
 /**
  * Entry Service
  *
@@ -35,7 +36,7 @@ class EntryService extends Component
 {
     public $currentEntry;
 
-    public function updateOrCreate(ImportEntry $importEntry) : EntryResult
+    public function updateOrCreate(ImportEntry $importEntry): EntryResult
     {
         $this->currentEntry = new EntryResult($importEntry);
 
@@ -46,8 +47,9 @@ class EntryService extends Component
                 ->slug($importEntry->slug)
                 ->status(null)
                 ->one();
-
-            if (!$entry) {
+            if ($entry) {
+                $this->currentEntry->logMsg("Found existing entry: {$entry->id}");
+            } else {
                 $entry = new Entry();
                 $entry->sectionId = $importEntry->section->id;
                 $entry->typeId = $importEntry->type->id;
@@ -59,6 +61,7 @@ class EntryService extends Component
                 $entry->expiryDate = isset($importEntry->expiryDate)
                     ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
                     : null;
+
                 $this->populateElementFields($entry, $importEntry, false);
 
                 try {
@@ -72,8 +75,6 @@ class EntryService extends Component
         return $this->currentEntry;
     }
 
-    // TODO update all of the methods below
-
     public function populateElementFields(&$entry, $params, $relationships = false)
     {
         $fieldLayout = $entry->getFieldLayout();
@@ -85,22 +86,26 @@ class EntryService extends Component
 
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
-            
+
             if (!isset($params->fields->{$field->handle})) {
                 $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
             } else {
                 $this->currentEntry->logMsg("Saving Entry Field: {$fieldType} -> {$field->handle}");
                 switch ($fieldType) {
                     case 'Assets':
-                        // if ($relationships) {
-                        $folderId = $field->resolveDynamicPathToFolderId();
-                        $fieldId = $field->id;
-                        $assets = $params->fields->{$field->handle}->value;
-                        $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
-                            return $assetService->save($folderId, $fieldId, $url);
-                        }, $assets);
+                        if ($relationships) {
+                            $folderId = $field->resolveDynamicPathToFolderId();
+                            $fieldId = $field->id;
+                            $assets = $params->fields->{$field->handle}->value;
+                            $this->currentEntry->logMsg("Element | Populating {$fieldType} field {$blockField->handle} with: " . count($assets) . " assets");
+                            $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                                return $assetService->save($folderId, $fieldId, $url);
+                            }, $assets);
+                        }
                         break;
                     case 'Matrix':
+                        $this->currentEntry->logMsg("Element | Populating {$fieldType} field {$field->handle}");
+
                         $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
                         $entry->{$field->handle} = $matrix ?? null;
                         break;
@@ -197,22 +202,24 @@ class EntryService extends Component
                         ->owner($entry)
                         ->one();
 
-                    $this->currentEntry->logMsg("Saving Matrix Field: {$fieldType} -> {$blockField->handle}");
+                    // $this->currentEntry->logMsg("Saving Matrix Field: {$fieldType} -> {$blockField->handle}");
 
                     if (!isset($block->$props->{$blockField->handle})) {
                         $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
                     } else {
                         switch ($fieldType) {
                             case 'Assets':
-                                // if ($relationships) {
-                                $folderId = $blockField->resolveDynamicPathToFolderId();
-                                $fieldId = $blockField->id;
-                                $values = $block->image->images->value ?? [];
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
-                                    return $assetService->save($folderId, $fieldId, $url);
-                                }, $values);
+                                if ($relationships) {
+                                    $folderId = $blockField->resolveDynamicPathToFolderId();
+                                    $fieldId = $blockField->id;
+                                    $values = $block->image->images->value ?? [];
+                                    $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with: " . count($values) . " assets");
+                                    $value = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                                        return $assetService->save($folderId, $fieldId, $url);
+                                    }, $values);
+                                    $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
                                     //}, $block->$props->{$blockField->handle});
-                                // }
+                                }
                                 break;
                             case 'Entries':
                                 if ($relationships) {
@@ -224,8 +231,12 @@ class EntryService extends Component
                                         $entryService->saveRelationships = false;
 
                                         $entry = $entryService->getEntry($e);
+                                        $this->currentEntry->logMsg("Matrix | processing entry {$blockField->handle}");
+
                                         return $entryService->updateOrCreate($entry);
                                     }, $block->$props->{$blockField->handle});
+                                } else {
+                                    $this->currentEntry->logMsg("Matrix | skipping entries because relationships are disabled");
                                 }
                                 break;
                             case 'Categories':
@@ -240,17 +251,21 @@ class EntryService extends Component
                                         return $catService->updateOrCreate($category);
                                     }, $block->$props->{$blockField->handle} ?? []);
 
-                                    $this->currentEntry->logMsg("Cats to save: " . count($cats));
+                                    $this->currentEntry->logMsg("Matrix | Categories to save: " . count($cats));
                                     $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $cats ?? [];
+                                } else {
+                                    $this->currentEntry->logMsg("Matrix | skipping categories because relationships are disabled");
                                 }
                                 break;
                             case 'Tags':
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $tagService->saveTags($block->$props->{$blockField->handle});
                                 break;
                             case 'Table':
+                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = json_encode($block->$props->{$blockField->handle});
                                 break;
                             case 'Lightswitch';
+                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = (bool) $block->$props->{$blockField->handle};
                                 break;
                             case 'Field':
@@ -259,6 +274,7 @@ class EntryService extends Component
                             case 'BrandColorsFieldType':
                             case 'ParentChannelFieldType':
                                 $value = $block->$props->{$blockField->handle}->value;
+                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
                                 break;
                             default:

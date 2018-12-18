@@ -28,7 +28,7 @@ class Import extends Model implements Runnable
         $results = [];
 
         $count = count($entries);
-        $index = 1;
+        $i = 1;
         //echo "Starting import of {$count} entries" . PHP_EOL;
         foreach ($entries as $entry) {
             $result = $service->updateOrCreate($entry);
@@ -36,7 +36,7 @@ class Import extends Model implements Runnable
                 throw new \Exception('Import failed');
             }
             //echo "Finished entry {$index}" . PHP_EOL;
-            $index++;
+            $i++;
             $results[] = $result;
         }
 
