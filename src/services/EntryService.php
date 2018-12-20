@@ -97,7 +97,9 @@ class EntryService extends Component
                 try {
                     Craft::$app->getElements()->saveElement($entry, false);
                 } catch (\Exception $e) {
+                    $this->currentEntry->setSuccess(false);
                     $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
+                    return $this->currentEntry;
                     //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
                 }
             }
@@ -266,7 +268,7 @@ class EntryService extends Component
                                                 ->one();
                                             if ($match) {
                                                 $this->log("Found matching entry: {$match->id}", self::CONTEXT_MATRIX);
-                                                return $match;
+                                                return $match->id;
                                             } else {
                                                 $this->log("Could not find related entry", self::CONTEXT_MATRIX);
                                                 return null;

@@ -41,7 +41,7 @@ export class ApiClient {
          
         if (window.ajaxSpinner) {
             const count = this.requests.length;
-            window.ajaxSpinner.show(`Processing ${this.index}/${count} entries...`);
+            window.ajaxSpinner.show(`Processing ${this.index+1}/${count} entries...`);
         }
         console.log(data);
         if (this.index >= this.requests.length) {

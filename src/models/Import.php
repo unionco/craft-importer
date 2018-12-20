@@ -33,7 +33,7 @@ class Import extends Model implements Runnable
         foreach ($entries as $entry) {
             $result = $service->updateOrCreate($entry);
             if (!$result->success) {
-                throw new \Exception('Import failed');
+            //    throw new \Exception('Import failed');
             }
             //echo "Finished entry {$index}" . PHP_EOL;
             $i++;
