@@ -1,3 +1,4 @@
+import { ApiClient } from './ApiClient';
 class SubmitButton {
     constructor(node) {
         this.container = node;
@@ -22,63 +23,62 @@ class SubmitButton {
 
         e.preventDefault();
         
-        const formData = this.serialize()
+        const requests = this.serialize()
 
-        fetch(this.submitUrl, {
-                method: 'post',
-                credentials: 'same-origin',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: formData,
-            })
-            .then(resp => resp.json())
-            .then(data => {
-                console.log(data);
-                if (window.importResults) {
-                    window.importResults.parseResults(data);
-                }
-            })
-            .finally(() => {
-                if (window.ajaxSpinner) {
-                    window.ajaxSpinner.hide();
-                }
-                this.hide();
-            });
+        if (requests && requests.length) {
+            if (window.ajaxSpinner) {
+                const count = requests.length;
+                window.ajaxSpinner.show(`Processing 1/${count} entries...`);
+            }
 
+            const apiClient = new ApiClient();
+            apiClient.makeRequest(requests, 0);
+        }
     }
 
     serialize() {
-        const formData = new FormData();
+        const requests = [];
+
         // Get the original import file name
         const file = document.querySelector('[name="importFile"]');
-        if (file) {
-            formData.append('importFile', file.value);
-        }
-        const allInputs = document.querySelectorAll('input,select');
-        //'.ImportPreview-entry--field>.input>*');
-        if (allInputs && allInputs.length) {
-            Array.prototype.forEach.call(allInputs, input => {
-                if (input.disabled) {
-                    return;
-                } else if (input.options !== undefined) {
-                    // Select
-                    let value = '';
-                    Array.prototype.forEach.call(input.selectedOptions, opt => {
-                        if (value.length) {
-                            value += ',';
-                        }
-                        value += opt.value;
-                    });
-                    formData.append(input.name, value);
-                } else {
-                    // Normal text input
-                    formData.append(input.name, input.value);
+        
+        const entries = document.querySelectorAll('.ImportPreview-entry');
+        Array.prototype.forEach.call(entries, entry => {
+            const formData = new FormData();
+            if (file) {
+                formData.append('importFile', file.value);
+            }
+            // Foreach input in this entry
+            const inputs = entry.querySelectorAll('input, select');
+            if (inputs && inputs.length) {
+                for (let i = 0; i < inputs.length; i++) {
+                    let input = inputs[i];
+                    if (input.disabled) {
+                        return;
+                    } else if (input.options !== undefined) {
+                        // Select
+                        let value = '';
+                        Array.prototype.forEach.call(input.selectedOptions, opt => {
+                            if (value.length) {
+                                value += ',';
+                            }
+                            value += opt.value;
+                        });
+                        formData.append(input.name, value);
+                    } else {
+                        // Normal text input
+                        formData.append(input.name, input.value);
+                    }
                 }
-            });
-        }
+            }
 
-        return formData;
+            requests.push({
+                url: this.submitUrl,
+                body: formData
+            });
+        });
+
+        return requests;
     }
 }
 

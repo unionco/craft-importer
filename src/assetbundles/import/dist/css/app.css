@@ -120,7 +120,8 @@
       max-height: 0;
       overflow: hidden; }
       .ImportResult-entry > .content.active {
-        max-height: 800px; }
+        max-height: 800px;
+        overflow: scroll; }
 
 .log-info {
   font-family: monospace;
@@ -138,7 +139,9 @@
 .AjaxSpinner-modal {
   display: none; }
   .AjaxSpinner-modal.active {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     background-color: rgba(0, 0, 0, 0.3);
     width: 100%;
@@ -148,8 +151,15 @@
     z-index: 2; }
     .AjaxSpinner-modal.active > .content {
       display: flex;
-      height: 100%;
+      height: 200px;
+      width: 400px;
       flex-direction: column;
       align-items: center;
-      justify-content: center; }
+      justify-content: space-evenly;
+      background-color: white;
+      border-radius: 4px; }
+      .AjaxSpinner-modal.active > .content > .text {
+        text-align: center;
+        border: none;
+        padding: 10px; }
 

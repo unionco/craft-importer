@@ -50,7 +50,7 @@ class Import extends Model implements Runnable
         $mergedEntries = [];
 
         if (count($fileEntries) != count($userEntries)) {
-            throw new \Exception('Number of entries do not match');
+            //throw new \Exception('Number of entries do not match');
         }
 
         foreach ($fileEntries as $entry) {
@@ -67,7 +67,9 @@ class Import extends Model implements Runnable
             }
 
             if (!$userEntry) {
-                throw new \Exception("IDs don't match for: {$entry->ID}");
+                unset($entry);
+                continue;
+                throw new \Exception("IDs don't match for: {$entry->id}");
             }
 
             $entry->resolveDiff($userEntry);

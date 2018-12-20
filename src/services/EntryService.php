@@ -34,21 +34,51 @@ use unionco\import\models\ImportEntry;
  */
 class EntryService extends Component
 {
+    const INFO = "info";
+    const ERROR = "error";
+    const CONTEXT_GLOBAL = "global";
+    const CONTEXT_ELEMENT = "element";
+    const CONTEXT_MATRIX = "matrix";
+
     public $currentEntry;
+    private $siteId;
+
+    private function log($msg, $context = self::CONTEXT_GLOBAL, $level = self::INFO, $siteId = null, $entry = null)
+    {
+        if (!$siteId) {
+            $siteId = $this->siteId;
+        }
+        if (!$entry) {
+            $entry = $this->currentEntry->original;
+        }
+
+        $this->currentEntry->logMsg("[{$context}] [siteId: {$siteId}] [entryId: {$entry->id}] $msg", $level);
+    }
 
     public function updateOrCreate(ImportEntry $importEntry): EntryResult
     {
         $this->currentEntry = new EntryResult($importEntry);
-
+        
         foreach ($importEntry->sites as $siteId) {
-            $entry = Entry::find()
-                ->sectionId($importEntry->section->id)
-                ->siteId($siteId)
+            if ($siteId instanceof \craft\models\Site) {
+                $siteId = $siteId->id;
+            }
+            $this->siteId = $siteId;
+
+            $entryQuery = Entry::find();
+            if (isset($importEntry->section->id)) {
+                $entryQuery = $entryQuery->sectionId($importEntry->section->id);
+            }
+            
+            $entry = $entryQuery
+                ->siteId(intval($siteId))
                 ->slug($importEntry->slug)
                 ->status(null)
                 ->one();
+
             if ($entry) {
-                $this->currentEntry->logMsg("Found existing entry: {$entry->id}");
+                // $this->currentEntry->logMsg("Found existing entry: {$entry->id}");
+                $this->log("Found existing entry: {$entry->id}");
             } else {
                 $entry = new Entry();
                 $entry->sectionId = $importEntry->section->id;
@@ -62,16 +92,18 @@ class EntryService extends Component
                     ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
                     : null;
 
-                $this->populateElementFields($entry, $importEntry, false);
+                $this->populateElementFields($entry, $importEntry, true);
 
                 try {
                     Craft::$app->getElements()->saveElement($entry, false);
                 } catch (\Exception $e) {
-                    $this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
+                    $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
+                    //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
                 }
             }
         }
         $this->currentEntry->setSuccess(true);
+        $this->currentEntry->setEntry($entry);
         return $this->currentEntry;
     }
 
@@ -88,23 +120,23 @@ class EntryService extends Component
             $fieldType = (new \ReflectionClass($field))->getShortName();
 
             if (!isset($params->fields->{$field->handle})) {
-                $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
+                $this->log("Property {$field->handle} doesn't exist on entry", self::CONTEXT_ELEMENT);
             } else {
-                $this->currentEntry->logMsg("Saving Entry Field: {$fieldType} -> {$field->handle}");
+                $this->log("Saving entry field: {$fieldType} -> {$field->handle}", self::CONTEXT_ELEMENT);
                 switch ($fieldType) {
                     case 'Assets':
                         if ($relationships) {
                             $folderId = $field->resolveDynamicPathToFolderId();
                             $fieldId = $field->id;
                             $assets = $params->fields->{$field->handle}->value;
-                            $this->currentEntry->logMsg("Element | Populating {$fieldType} field {$blockField->handle} with: " . count($assets) . " assets");
+                            $this->log("Populating {$fieldType} field {$field->handle} with: " . count($assets) . " assets", self::CONTEXT_ELEMENT);
                             $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
                                 return $assetService->save($folderId, $fieldId, $url);
                             }, $assets);
                         }
                         break;
                     case 'Matrix':
-                        $this->currentEntry->logMsg("Element | Populating {$fieldType} field {$field->handle}");
+                        $this->log("Populating {$fieldType} field {$field->handle}", self::CONTEXT_ELEMENT);
 
                         $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
                         $entry->{$field->handle} = $matrix ?? null;
@@ -112,7 +144,7 @@ class EntryService extends Component
                     case 'Entries':
                         if ($relationships) {
                             $entry->{$field->handle} = array_map(function ($e) {
-                                $this->currentEntry->logMsg("Attempt to save related entry: {$e->id}");
+                                $this->log("Attempt to save related entry: {$e->id}", self::CONTEXT_ELEMENT);
                                 $entryService = new EntryService();
                                 $entryService->site = $this->site;
                                 $entryService->oldSite = $this->oldSite;
@@ -126,7 +158,7 @@ class EntryService extends Component
                     case 'Categories':
                         if ($relationships) {
                             $cats = array_map(function ($e) {
-                                $this->currentEntry->logMsg("Attempt to save related category: {$e->id}");
+                                $this->log("Attempt to save related category: {$e->id}", self::CONTEXT_ELEMENT);
                                 $catService = new CategoryService();
                                 $catService->site = $this->site;
                                 $catService->oldSite = $this->oldSite;
@@ -134,7 +166,7 @@ class EntryService extends Component
                                 $category = $catService->getCategory($e);
                                 return $catService->updateOrCreate($category);
                             }, $params->fields->{$field->handle} ?? []);
-                            $this->currentEntry->logMsg("Cats to save: " . count($cats));
+                            $this->log("Categories to save: " . count($cats), self::CONTEXT_ELEMENT);
                             $entry->{$field->handle} = $cats ?? [];
                         }
                         break;
@@ -145,19 +177,23 @@ class EntryService extends Component
                         $entry->{$field->handle} = json_encode($params->fields->{$field->handle});
                         break;
                     case 'Field':
+                    case 'RichText':
                     case 'PlainText':
                     case 'Dropdown':
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
                     case 'Date':
                         $value = $params->fields->{$field->handle}->value;
+                        $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
                         break;
                     case 'IMapFieldType':
                         $entry->{$field->handle} = $params->fields->{$field->handle};
                         break;
                     case 'Lightswitch':
-                        $entry->{$field->handle} = (bool) $params->fields->{$field->handle}->value;
+                        $value = (bool) $params->fields->{$field->handle}->value;
+                        $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
+                        $entry->{$field->handle} = $value;
                 }
             }
         }
@@ -187,25 +223,23 @@ class EntryService extends Component
             $newSiteBlockType = $findBlockTypeByHandle($props);
 
             if ($newSiteBlockType) {
-                $this->currentEntry->logMsg("Matrix Block Found: {$newSiteBlockType->handle}");
+                $this->log("Matrix Block Found: {$newSiteBlockType->handle}", self::CONTEXT_MATRIX);
 
                 $fields = $newSiteBlockType->getFields();
-
+                
+                $oldValue = MatrixBlock::find()
+                    ->id($newSiteBlockType->id)
+                    ->owner($entry)
+                    ->one();
+                
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['type'] = $props;
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['enabled'] = true;
 
                 foreach ($fields as $blockField) {
                     $fieldType = (new \ReflectionClass($blockField))->getShortName();
 
-                    $oldValue = MatrixBlock::find()
-                        ->fieldId($newSiteBlockType->fieldId)
-                        ->owner($entry)
-                        ->one();
-
-                    // $this->currentEntry->logMsg("Saving Matrix Field: {$fieldType} -> {$blockField->handle}");
-
                     if (!isset($block->$props->{$blockField->handle})) {
-                        $this->currentEntry->logMsg("Property {$field->handle} doesn't exist on entry: {$entry->title}");
+                        $this->log("Property {$field->handle} doesn't exist on entry: {$entry->title}", self::CONTEXT_MATRIX);
                     } else {
                         switch ($fieldType) {
                             case 'Assets':
@@ -213,7 +247,7 @@ class EntryService extends Component
                                     $folderId = $blockField->resolveDynamicPathToFolderId();
                                     $fieldId = $blockField->id;
                                     $values = $block->image->images->value ?? [];
-                                    $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with: " . count($values) . " assets");
+                                    $this->log("Populating {$fieldType} field {$blockField->handle} with: " . count($values) . " assets", self::CONTEXT_MATRIX);
                                     $value = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
                                         return $assetService->save($folderId, $fieldId, $url);
                                     }, $values);
@@ -223,26 +257,33 @@ class EntryService extends Component
                                 break;
                             case 'Entries':
                                 if ($relationships) {
-                                    $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = array_map(function ($e) {
-                                        $this->currentEntry->logMsg("Attempt to save related entry: {$e->id}");
-                                        $entryService = new EntryService();
-                                        $entryService->site = $this->site;
-                                        $entryService->oldSite = $this->oldSite;
-                                        $entryService->saveRelationships = false;
-
-                                        $entry = $entryService->getEntry($e);
-                                        $this->currentEntry->logMsg("Matrix | processing entry {$blockField->handle}");
-
-                                        return $entryService->updateOrCreate($entry);
+                                    $topLevelKey = $oldValue->id ?? ("new" . ($key + 1));
+                                    $values = array_map(function ($e) {
+                                        $this->log("Attempt to relate entry: {$e->slug}", self::CONTEXT_MATRIX);
+                                        if ($e->type == 'EntryStub') {
+                                            $match = Entry::find()
+                                                ->slug($e->slug)
+                                                ->one();
+                                            if ($match) {
+                                                $this->log("Found matching entry: {$match->id}", self::CONTEXT_MATRIX);
+                                                return $match;
+                                            } else {
+                                                $this->log("Could not find related entry", self::CONTEXT_MATRIX);
+                                                return null;
+                                            }
+                                        }
+                                        
                                     }, $block->$props->{$blockField->handle});
+
+                                    $newBlocks[$topLevelKey]['fields'][$blockField->handle] = $values;
                                 } else {
-                                    $this->currentEntry->logMsg("Matrix | skipping entries because relationships are disabled");
+                                    $this->log("Skipping entries because relationships are disabled", self::CONTEXT_MATRIX);
                                 }
                                 break;
                             case 'Categories':
                                 if ($relationships) {
                                     $cats = array_map(function ($e) {
-                                        $this->currentEntry->logMsg("Attempt to save related category: {$e->id}");
+                                        $this->log("Attempting to save related category: {$e->id}", self::CONTEXT_MATRIX);
                                         $catService = new CategoryService();
                                         $catService->site = $this->site;
                                         $catService->oldSite = $this->oldSite;
@@ -251,31 +292,35 @@ class EntryService extends Component
                                         return $catService->updateOrCreate($category);
                                     }, $block->$props->{$blockField->handle} ?? []);
 
-                                    $this->currentEntry->logMsg("Matrix | Categories to save: " . count($cats));
+                                    $this->log("Categories to save: " . count($cats), self::CONTEXT_MATRIX);
                                     $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $cats ?? [];
                                 } else {
-                                    $this->currentEntry->logMsg("Matrix | skipping categories because relationships are disabled");
+                                    $this->log("Skipping categories because relationships are disabled", self::CONTEXT_MATRIX);
                                 }
                                 break;
                             case 'Tags':
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $tagService->saveTags($block->$props->{$blockField->handle});
                                 break;
                             case 'Table':
-                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = json_encode($block->$props->{$blockField->handle});
+                                $value = json_encode($block->$props->{$blockField->handle});
+                                $this->log("Populating {$fieldType} field {$blockField->handle} with: {$value}", self::CONTEXT_MATRIX);
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
                                 break;
                             case 'Lightswitch';
-                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = (bool) $block->$props->{$blockField->handle};
+                                $value = (bool) $block->$props->{$blockField->handle};
+                                $this->log("Populating {$fieldType} field {$blockField->handle} with: {$value}", self::CONTEXT_MATRIX);
+                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
                                 break;
                             case 'Field':
+                            case 'RichText':
                             case 'PlainText':
                             case 'Dropdown':
                             case 'BrandColorsFieldType':
                             case 'ParentChannelFieldType':
+                                $keyVal = $oldValue->id ?? ("new" . ($key + 1));
                                 $value = $block->$props->{$blockField->handle}->value;
-                                $this->currentEntry->logMsg("Matrix | Populating {$fieldType} field {$blockField->handle} with value: {$value}");
-                                $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
+                                $this->log("Populating {$fieldType} field {$blockField->handle} with: {$value}; key: [{$keyVal}]['fields'][{$blockField->handle}]", self::CONTEXT_MATRIX);
+                                $newBlocks[$keyVal]['fields'][$blockField->handle] = $value;
                                 break;
                             default:
                                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $block->$props->{$blockField->handle};
@@ -283,7 +328,7 @@ class EntryService extends Component
                     }
                 }
             } else {
-                $this->currentEntry->logMsg("Matrix Block Not Found: {$props}");
+                $this->log("Matrix block not found: {$props}", self::CONTEXT_MATRIX);
             }
         }
 

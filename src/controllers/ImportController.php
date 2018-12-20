@@ -13,6 +13,7 @@ namespace unionco\import\controllers;
 use Craft;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use craft\helpers\App;
 use unionco\import\Import as ImportModule;
 use unionco\import\models\Import;
 use unionco\import\models\UserInput;
@@ -67,6 +68,7 @@ class ImportController extends Controller
 
     public function actionSubmit()
     {
+        App::maxPowerCaptain();
         $this->requirePostRequest();
 
         $formData = Craft::$app->getRequest()->getBodyParams();

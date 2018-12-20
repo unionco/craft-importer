@@ -5,20 +5,22 @@ class ImportResults
     constructor(node) {
         this.node = node;
         console.log(node);
-    }
-
-    parseResults(data) {
-        const results = document.createElement('div');
-        results.classList.add('ImportResult');
-
+        this.resultsContainer = document.createElement('div');
+        this.resultsContainer.classList.add('ImportResult');
+        
         const title = document.createElement('h1');
         title.innerText = 'Results';
+        this.resultsContainer.appendChild(title);
 
-        results.appendChild(title);
+        this.node.appendChild(this.resultsContainer);
+    }
 
+    parseResults(data, index) {
+        console.log('parseResults', index);
         data.forEach(result => {
             console.log(result);
             const container = document.createElement('div');
+            container.id = `result-${index}`;
             container.classList.add('ImportResult-entry');
             container.id = `result-${result.original.id}`;
 
@@ -43,12 +45,10 @@ class ImportResults
             body.appendChild(pre);
             container.appendChild(preview);
             container.appendChild(body);
-            results.appendChild(container);
+            this.resultsContainer.appendChild(container);
 
             new ImportResult(container);
         });
-
-        this.node.appendChild(results);
     }
 
     parseLog(result) {
