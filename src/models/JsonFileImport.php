@@ -2,34 +2,30 @@
 
 namespace unionco\import\models;
 
-use Craft;
-use craft\base\Model;
+use unionco\import\models\FileImport;
 use unionco\import\models\ImportEntry;
-use unionco\import\interfaces\FileImport;
 
-class JsonFileImport extends Model implements FileImport
+class JsonFileImport extends FileImport
 {
-    public $entries;
-    public $file;
-
-    public function __construct($filePath)
+    protected function parseFile(): void
     {
-        $this->file = $filePath;
-        $this->parseEntries();
-    }
-
-    public function parseEntries() : void
-    {
-        $this->entries = [];
         $content = json_decode(file_get_contents($this->file));
 
-        foreach ($content as $entry) {
-            $this->entries[] = new ImportEntry($entry);
-        }
-    }
+        // Parse through entries
+        $entries = [];
 
-    public function getEntries() : array
-    {
-        return $this->entries;
+        foreach ($content as $entry) {
+            $entries[] = new ImportEntry($entry);
+        }
+
+        $this->entries = $entries;
+
+        // Parse through sections
+        $sections = [];
+        foreach ($this->entries as $entry) {
+            $sections[] = $entry->section;
+        }
+        $this->sections = $sections;
+
     }
 }

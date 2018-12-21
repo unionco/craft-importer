@@ -1,8 +1,13 @@
 @import 'fonts';
 @import 'colors';
 @import 'FileUpload';
-@import 'ImportPreview';
+@import 'SectionPreview';
+@import 'EntryPreview';
 @import 'ImportResult';
 @import 'SubmitButton';
 @import 'AjaxSpinner';
 @import '../../node_modules/craftcms-sass/src/mixins';
+
+.hidden {
+    display: none;
+}

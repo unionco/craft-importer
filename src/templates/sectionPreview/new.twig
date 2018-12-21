@@ -1,0 +1,20 @@
+{% import '_includes/forms' as forms %}
+<div class="SectionPreview-section new">
+    {{ forms.hidden({
+        id: 'section-handle-' ~ index,
+        label: 'Handle',
+        name: 'sectionHandle[' ~ index ~ ']',
+        value: handle,
+    }) }}
+
+    {{ forms.selectField({
+        id: 'section-alias-' ~ index,
+        label: 'Import [' ~ handle ~ '] As Section',
+        name: 'sectionAlias[' ~ index ~ ']',
+        value: false,
+        required: true,
+        options: options,
+    }) }}
+
+    If the section does not exist, you should create it (with the correct fields) and then return to this page.
+</div>

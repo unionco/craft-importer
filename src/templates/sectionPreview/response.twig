@@ -1,0 +1,20 @@
+<h1>Sections</h1>
+<h2>Existing Sections</h2>
+{% for index, section in sectionPreview.existingSections %}
+    <div class="SectionPreview-section existing">
+        {{ section.name }}
+    </div>
+{% endfor %}
+
+<h2>New Sections</h2>
+{% for index, section in sectionPreview.newSections %}
+    {% include 'import/sectionPreview/new' with {
+        handle: section.handle,
+        index: index,
+        options: sectionOptions
+    } only %}
+{% endfor %}
+
+<hr>
+<input type="hidden" id="SectionPreview-serialized" value="{{ serializedSectionPreview }}" />
+{% include 'import/sectionPreview/nextButton' %}

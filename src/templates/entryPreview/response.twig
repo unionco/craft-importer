@@ -1,0 +1,11 @@
+<h2>Entries</h2>
+{% for index, entry in entryPreview.entries %}
+    {% include 'import/entryPreview/entry' with {
+        index: index,
+        entry: entry,
+    } only %}
+{% endfor %}
+
+<hr/>
+<input type="hidden" id="EntryPreview-serialized" value="{{ serializedEntryPreview }}" />
+{% include 'import/entryPreview/nextButton' %}

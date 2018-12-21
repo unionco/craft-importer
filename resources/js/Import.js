@@ -1,21 +1,38 @@
 import '../sass/Import.scss';
 
-import { onInit as fileUpload } from './modules/FileUpload';
-import { onInit as submitButton } from './modules/SubmitButton';
-import { onInit as ajaxSpinner } from './modules/AjaxSpinner';
-import { onInit as importResults } from './modules/ImportResults';
+import FileUpload from './modules/FileUpload';
+import SectionPreview from './modules/SectionPreview';
+import {
+  onInit as submitButton
+} from './modules/SubmitButton';
+import AjaxSpinner from './modules/AjaxSpinner';
+import {
+  onInit as importResults
+} from './modules/ImportResults';
+import {
+  ApiClient
+} from './modules/ApiClient';
+import EntryPreview from './modules/EntryPreview';
 
 class Import {
   constructor() {
-    fileUpload();
-    submitButton();
-    ajaxSpinner();
+    this.apiClient = new ApiClient();
+
+    const fileUpload = document.querySelector('#FileUpload')
+    this.fileUpload = new FileUpload(fileUpload);
+
+    const sectionPreview = document.querySelector('#SectionPreview');
+    this.sectionPreview = new SectionPreview(sectionPreview);
+
+    const entryPreview = document.querySelector('#EntryPreview');
+    this.entryPreview = new EntryPreview(entryPreview);
+
+    const body = document.querySelector('body');
+    this.ajaxSpinner = new AjaxSpinner(body);
     importResults();
   }
 }
 
 window.onload = () => {
-  if (document.querySelector('[data-import-plugin]')) {
-    window.Import = new Import();
-  }
+  window.Import = new Import();
 };

@@ -11,14 +11,14 @@
 namespace unionco\import\controllers;
 
 use Craft;
+use craft\helpers\App;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use craft\helpers\App;
-use unionco\import\Import as ImportModule;
 use unionco\import\models\Import;
-use unionco\import\models\UserInput;
+use unionco\import\models\SectionPreview;
+use unionco\import\models\EntryPreview;
 use unionco\import\models\JsonFileImport;
-use unionco\import\models\ImportPreview;
+use unionco\import\models\UserInput;
 
 class ImportController extends Controller
 {
@@ -58,11 +58,46 @@ class ImportController extends Controller
                 return;
         }
 
-        $preview = new ImportPreview($import);
+        $sectionPreview = new SectionPreview($import);
+        //$preview = new ImportPreview($import);
 
-        return $this->renderTemplate('import/_/components/importPreview', [
-            'preview' => $preview,
+        $sectionOptions = array_map(function ($section) {
+            return [
+                'value' => $section->id,
+                'label' => $section->name,
+            ];
+        }, Craft::$app->getSections()->getAllSections());
+
+        $defaultOption = [
+            'value' => 0,
+            'label' => 'Map Section',
+        ];
+        $sectionOptions = array_merge([$defaultOption], $sectionOptions);
+
+        $serializedSectionPreview = serialize($sectionPreview);
+
+        return $this->renderTemplate('import/sectionPreview/response', [
+            'sectionPreview' => $sectionPreview,
+            'sectionOptions' => $sectionOptions,
             'file' => $path,
+            'serializedSectionPreview' => $serializedSectionPreview,
+        ]);
+    }
+
+    public function actionPreviewEntries()
+    {
+        $this->requirePostRequest();
+
+        $formData = Craft::$app->getRequest()->getBodyParams();
+        $serialized = $formData['serialized'];
+        $sectionPreview = unserialize($serialized);
+        $sectionMap = $formData['sectionMapping'];
+
+        $entryPreview = new EntryPreview($sectionPreview, $sectionMap);
+
+        return $this->renderTemplate('import/entryPreview/response', [
+            'entryPreview' => $entryPreview,
+            'serializedEntryPreview' => serialize($entryPreview),
         ]);
     }
 
@@ -73,11 +108,14 @@ class ImportController extends Controller
 
         $formData = Craft::$app->getRequest()->getBodyParams();
 
+        $serialized = $formData['serialized'];
+        $entryPreview = unserialize($serialized);
+
         $importFilePath = $formData['importFile'];
         $parts = explode('.', $importFilePath);
         $length = count($parts);
 
-        $extension = $parts[$length-1];
+        $extension = $parts[$length - 1];
 
         switch (strtolower($extension)) {
             case 'json':
@@ -94,7 +132,7 @@ class ImportController extends Controller
 
         $import = new Import($fileImport, $userInput);
         $result = $import->run();
-        
+
         return json_encode($result);
     }
 }

@@ -1,4 +1,4 @@
-.ImportPreview {
+.EntryPreview {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -9,6 +9,15 @@
     // border-radius: $btnBorderRadius;
     // border: 1px solid $hairlineColorAlpha;
     // padding: 6px;
+
+    &-sections {
+        display: flex;
+        flex-direction: row;
+
+        &>.section {
+            flex: 1 1 50%;
+        }
+    }
 
     &-entry {
         display: flex;
@@ -31,6 +40,9 @@
             
             & > span {
                 margin: 0 2rem;
+                &.pull-right {
+                    margin-left: auto;
+                }
             }
         }
 

@@ -1,54 +1,72 @@
 export class ApiClient {
     constructor() {
+        this.uploadUrl = '/admin/import/upload';
+        this.sectionsUrl = '/admin/import/preview-entries';
+        this.entryImportUrl = '/admin/import/submit';
         this.requests = null;
         this.index = 0;
         //window.resultsHandler = new ResultsHandler();
     }
 
-    makeRequest(requests, index = 0) {
+    fileUploadRequest(formData, callback) {
+        window.Import.ajaxSpinner.show('Uploading file...');
+        this.req(this.uploadUrl, formData)
+            .then(resp => resp.text())
+            .then(data => callback(data))
+            .finally(() => {
+                window.Import.ajaxSpinner.hide();
+            });
+    }
+
+    submitSections(formData, callback) {
+        this.req(this.sectionsUrl, formData)
+            .then(resp => resp.text())
+            .then(data => callback(data))
+            .finally(() => {
+                window.Import.ajaxSpinner.hide();
+            });
+    }
+
+    entryRequest(requests) {
         this.requests = requests;
         this.index = 0;
 
-        this.req(this.requests[this.index])
+        this.req(this.entryImportUrl, this.requests[this.index])
             .then(resp => resp.json())
-            .then(data => this.reqCallback(data))
+            .then(data => this.entryRequestCallback(data))
             .catch(err => console.log(err))
             .finally(() => {
                 if (window.ajaxSpinner) {
                     window.ajaxSpinner.hide();
                 }
             });
-
     }
 
-    req(request) {
-        return fetch(request.url, {
+    req(url, body) {
+        return fetch(url, {
             method: 'post',
             credentials: 'same-origin',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: request.body,
+            body: body,
         })
     }
 
-    reqCallback(data) {
-        if (window.importResults) {
-            window.importResults.parseResults(data, this.index);
-        }
-
+    entryRequestCallback(data) {
+        window.Import.importResults.parse(data);
         this.index++;
-         
-        if (window.ajaxSpinner) {
-            const count = this.requests.length;
-            window.ajaxSpinner.show(`Processing ${this.index+1}/${count} entries...`);
-        }
+
+
+        const count = this.requests.length;
+        window.Import.ajaxSpinner.show(`Processing ${this.index+1}/${count} entries...`);
+
         console.log(data);
         if (this.index >= this.requests.length) {
             return Promise.resolve(true);
         }
         return this.req(this.requests[this.index])
             .then(resp => resp.json())
-            .then(data => this.reqCallback(data));
+            .then(data => this.entryRequestCallback(data));
     }
 }

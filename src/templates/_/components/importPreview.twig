@@ -1,6 +1,28 @@
 {% import '_includes/forms' as forms %}
 {% import 'import/_includes/importForms' as importForms %}
 <div class="ImportPreview">
+    <h1>Sections</h1>
+    <h3>New</h3>
+    <div class="ImportPreview-sections">
+        {% for index, section in preview.newSections %}
+            {% include 'import/_/partials/import-preview/newSection' with {
+                index: index,
+                handle: section.handle,
+                options: sectionOptions
+            } only %}
+        {% endfor %}
+    </div>
+    
+    <h3>Existing</h3>
+    <div class="ImportPreview-sections">
+        {% for index, section in preview.existingSections %}
+            {% include 'import/_/partials/import-preview/existingSection' with {
+                index: index,
+                section: section,
+            } only %}
+        {% endfor %}
+    </div>
+
     <h1>Entries</h1>
     {% if preview is not defined %}
         <span>Error! No preview available</span>

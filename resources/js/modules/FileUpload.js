@@ -1,7 +1,5 @@
 import EntryPreview from './EntryPreview';
-import {
-    onInit as newSectionButton
-} from './NewSectionButton';
+import NewSectionAlias from './NewSectionAlias';
 
 const removeDragData = e => {
     if (e.dataTransfer.items) {
@@ -11,7 +9,7 @@ const removeDragData = e => {
     }
 };
 
-class FileUpload {
+export default class FileUpload {
     constructor(node) {
         this.element = node;
         this.uploadUrl = '/admin/import/upload';
@@ -30,8 +28,6 @@ class FileUpload {
         if (this.input) {
             this.input.addEventListener('change', this.fileSelectHandler.bind(this));
         }
-
-        this.setSubmitEnabled(false);
     }
 
     upload() {
@@ -45,45 +41,7 @@ class FileUpload {
         Array.prototype.forEach.call(this.files, f => {
             formData.append('files[]', f, f.name);
         });
-
-        fetch(this.uploadUrl, {
-                method: 'post',
-                credentials: 'same-origin',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: formData,
-            })
-            .then(resp => resp.text())
-            .then(data => {
-                this.results.innerHTML = data;
-                const entries = document.querySelectorAll('.ImportPreview-entry');
-                if (entries && entries.length) {
-                    Array.prototype.forEach.call(entries, entry => {
-                        new EntryPreview(entry);
-                    });
-
-                    this.setSubmitEnabled(true);
-                    newSectionButton();
-
-                    const metaFields = document.querySelectorAll('[data-meta]');
-                    if (metaFields) {
-                        Array.prototype.forEach.call(metaFields, field => {
-                            console.log(field.innerText);
-                            eval(field.innerText);
-                        });
-                    }
-
-                    if (window.submitButton) {
-                        window.submitButton.show();
-                    }
-                }
-            })
-            .finally(() => {
-                if (window.ajaxSpinner) {
-                    window.ajaxSpinner.hide();
-                }
-            });
+        window.Import.apiClient.fileUploadRequest(formData, window.Import.sectionPreview.start);
     }
 
     fileSelectHandler(e) {
@@ -128,14 +86,6 @@ class FileUpload {
         this.files = [];
         this.updateLabel();
         this.results.innerHTML = '';
-        this.setSubmitEnabled(false);
-    }
-
-    setSubmitEnabled(enabled) {
-        const submitButton = document.querySelector('[data-submit-button]');
-        if (submitButton) {
-            submitButton.dataset.valid = enabled ? '1' : '0';
-        }
     }
 
     updateLabel() {
@@ -163,11 +113,11 @@ class FileUpload {
     }
 }
 
-export const onInit = () => {
-    const fileUploads = document.querySelectorAll('[data-import-file-upload]');
-    if (fileUploads && fileUploads.length) {
-        Array.prototype.forEach.call(fileUploads, f => {
-            new FileUpload(f);
-        });
-    }
-}
+// export const onInit = () => {
+//     const fileUploads = document.querySelectorAll('[data-import-file-upload]');
+//     if (fileUploads && fileUploads.length) {
+//         Array.prototype.forEach.call(fileUploads, f => {
+//             new FileUpload(f);
+//         });
+//     }
+// }

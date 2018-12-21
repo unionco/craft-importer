@@ -39,17 +39,22 @@
     .FileUpload-input + label:hover {
       background-color: #ff0000; }
 
-.ImportPreview {
+.SectionPreview {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin: 2rem auto; }
-  .ImportPreview-entry {
+  .SectionPreview-sections {
+    display: flex;
+    flex-direction: row; }
+    .SectionPreview-sections > .section {
+      flex: 1 1 50%; }
+  .SectionPreview-entry {
     display: flex;
     flex-direction: column;
     margin-bottom: 6px;
     width: 100%; }
-    .ImportPreview-entry > .preview {
+    .SectionPreview-entry > .preview {
       display: flex;
       flex-direction: row;
       padding: 2rem;
@@ -57,31 +62,85 @@
       border-radius: 2px;
       border: 1px solid rgba(0, 0, 20, 0.1);
       background-color: #e3e5e8; }
-      .ImportPreview-entry > .preview > span {
+      .SectionPreview-entry > .preview > span {
         margin: 0 2rem; }
-    .ImportPreview-entry > .content {
+        .SectionPreview-entry > .preview > span.pull-right {
+          margin-left: auto; }
+    .SectionPreview-entry > .content {
       transition: max-height 300ms ease-in-out;
       max-height: 0;
       overflow: hidden; }
-      .ImportPreview-entry > .content.active {
+      .SectionPreview-entry > .content.active {
         max-height: 800px; }
-    .ImportPreview-entry--field {
+    .SectionPreview-entry--field {
       width: 100%;
       display: flex;
       flex-direction: row;
       padding: 6px; }
-      .ImportPreview-entry--field > .title {
+      .SectionPreview-entry--field > .title {
         min-width: 30%;
         text-align: center; }
-      .ImportPreview-entry--field > .input {
+      .SectionPreview-entry--field > .input {
         text-align: center;
         min-width: 70%; }
-        .ImportPreview-entry--field > .input > input[type='text'] {
+        .SectionPreview-entry--field > .input > input[type='text'] {
           border: 1px solid rgba(0, 0, 20, 0.1);
           border-radius: 2px;
           transition: border linear 50ms;
           width: 90%; }
-        .ImportPreview-entry--field > .input > textarea {
+        .SectionPreview-entry--field > .input > textarea {
+          width: 90%; }
+
+.EntryPreview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 2rem auto; }
+  .EntryPreview-sections {
+    display: flex;
+    flex-direction: row; }
+    .EntryPreview-sections > .section {
+      flex: 1 1 50%; }
+  .EntryPreview-entry {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+    width: 100%; }
+    .EntryPreview-entry > .preview {
+      display: flex;
+      flex-direction: row;
+      padding: 2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 20, 0.1);
+      background-color: #e3e5e8; }
+      .EntryPreview-entry > .preview > span {
+        margin: 0 2rem; }
+        .EntryPreview-entry > .preview > span.pull-right {
+          margin-left: auto; }
+    .EntryPreview-entry > .content {
+      transition: max-height 300ms ease-in-out;
+      max-height: 0;
+      overflow: hidden; }
+      .EntryPreview-entry > .content.active {
+        max-height: 800px; }
+    .EntryPreview-entry--field {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      padding: 6px; }
+      .EntryPreview-entry--field > .title {
+        min-width: 30%;
+        text-align: center; }
+      .EntryPreview-entry--field > .input {
+        text-align: center;
+        min-width: 70%; }
+        .EntryPreview-entry--field > .input > input[type='text'] {
+          border: 1px solid rgba(0, 0, 20, 0.1);
+          border-radius: 2px;
+          transition: border linear 50ms;
+          width: 90%; }
+        .EntryPreview-entry--field > .input > textarea {
           width: 90%; }
 
 .ImportResult {
@@ -162,4 +221,7 @@
         text-align: center;
         border: none;
         padding: 10px; }
+
+.hidden {
+  display: none; }
 

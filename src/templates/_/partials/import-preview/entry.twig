@@ -5,6 +5,13 @@
     <div class="preview">
         <span>ID: {{ entry.id }}</span>
         <span>Title: {{ entry.title }}</span>
+        <span class="pull-right"> {{ forms.checkboxField({
+            id: 'enabled-' ~ entry.id,
+            label: 'Import',
+            name: 'enabled[' ~ entry.id ~ ']',
+            value: true,
+        }) }}
+        </span>
     </div>
     <div class="content">
 
@@ -24,12 +31,18 @@
             required: true,
         }) }}
 
+        {% if 'new' in (entry.section | keys) %}
+            {{ forms.hidden({
+                id: 'section-handle-' ~ entry.id,
+                value: entry.section.handle
+            }) }}
+        {% endif %}
         {{ forms.selectField({
             id: 'section-' ~ entry.id,
             label: 'Section',
             name: 'section[' ~ entry.id ~ ']',
             options: entry.getSections,
-            value: entry.section.id,
+            value: entry.section.id ?? 0,
             required: true,
         }) }}
 
@@ -38,7 +51,7 @@
             label: 'Entry Type',
             name: 'type[' ~ entry.id ~ ']',
             options: entry.getEntryTypes,
-            value: entry.type.id,
+            value: entry.type.id ?? 0,
             required: true,
         }) }}
 

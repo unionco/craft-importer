@@ -1,80 +1,66 @@
-const camelCase = str => {
-    return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-        return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-    }).replace(/\s+/g, '');
-};
-
+import EntryPreviewEntry from './entryPreview/Entry';
 export default class EntryPreview {
     constructor(node) {
         this.node = node;
-        this.id = node.id;
-        this.section = document.querySelector(`#section-${this.id}`);
-        this.type = document.querySelector(`#type-${this.id}`);
-        
-        this.preview = node.children[0];
-        this.body = node.children[1];
-
-        if (this.preview && this.body) {
-            this.preview.addEventListener('click', this.toggleExpand.bind(this));
-        }
-
-        this.initDropdowns();
-        this.initMultiSelects();
+        this.entries = [];
+        this.start = this.start.bind(this);
+        this.submitButton = null;
     }
 
-    toggleExpand() {
-        this.body.classList.toggle('active');
+    start(data) {
+        this.node.innerHTML = data;
+        this.submitButton = this.node.querySelector('#EntryPreview-NextButton');
+        this.submitButton.addEventListener('click', this.submit.bind(this));
+        this.initEntries();
     }
 
-    initDropdowns() {
-        const dropdowns = document.querySelectorAll('select');
-        if (dropdowns && dropdowns.length) {
-            Array.prototype.forEach.call(dropdowns, dropdown => {
-                const namePrefix = dropdown.name.replace(/\[[0-9]+\]/, '');
-                switch (namePrefix) {
-                    case 'section':
-                        dropdown.addEventListener('change', this.updateType.bind(this));
-                        break;
-                    default:
-                }
-            });
-        }
-    }
-
-    initMultiSelects() {
-        const multiSelectOptions = document.querySelectorAll('select[multiple]>option');
-        Array.prototype.forEach.call(multiSelectOptions, opt => {
-            opt.selected = true;
+    initEntries() {
+        this.entries = [];
+        this.node.querySelectorAll('.EntryPreview-entry').forEach(entry => {
+            this.entries.push(new EntryPreviewEntry(entry));
         });
     }
 
-    updateType(e) {
-        const newValue = parseInt(e.target.value);
-        fetch(`/admin/import/sections/types/${newValue}`)
-            .then(resp => resp.json())
-            .then(data => {
-                const newTypes = data;
-                if (newTypes) {
-                    let options = '';
-                    for (let i = 0; i < newTypes.length; i++) {
-                        options += `<option value="${newTypes[i].id}">${newTypes[i].name}</option>`;
-                    }
-                    this.type.innerHTML = options;
-                } else {
-                    console.log('Error');
-                    this.type.innerHTML = '';
-                }
-            });
-    }
+    submit() {
+        const serialized = document.querySelector('#EntryPreview-serialized').value;
+        const requests = [];
+        window.Import.ajaxSpinner.show('Processing entries...');
+        this.entries.forEach(entry => {
+            // Check if import is checked
+            if (!entry.node.querySelector('[type="checkbox"][name*=enabled]').checked) {
+                return;
+            }
 
-    toggleSites(e) {
-        const options = document.querySelectorAll(`select[name="sites[${this.id}][]"]>option`);
-        if (options && options.length) {
-            // Look at the first checkbox to see if we are checking/unchecking the rest of them
-            const selected = options[0].selected;
-            Array.prototype.forEach.call(options, option => {
-                option.selected = !selected;
-            });
-        }
+            const formData = new FormData();
+            formData.append('serialized', serialized);
+
+            // Foreach input in this entry
+            const inputs = entry.node.querySelectorAll('input, select');
+            if (inputs && inputs.length) {
+                for (let i = 0; i < inputs.length; i++) {
+                    let input = inputs[i];
+                    if (input.disabled) {
+                        return;
+                    } else if (input.options !== undefined) {
+                        // Select
+                        let value = '';
+                        Array.prototype.forEach.call(input.selectedOptions, opt => {
+                            if (value.length) {
+                                value += ',';
+                            }
+                            value += opt.value;
+                        });
+                        formData.append(input.name, value);
+                    } else {
+                        // Normal text input
+                        formData.append(input.name, input.value);
+                    }
+                }
+            }
+
+            requests.push(formData);
+        });
+
+        window.Import.apiClient.entryRequest(requests);
     }
 }

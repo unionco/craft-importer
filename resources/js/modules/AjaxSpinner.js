@@ -1,4 +1,4 @@
-class AjaxSpinner
+export default class AjaxSpinner
 {
     constructor(node) {
         this.root = node;
@@ -39,7 +39,7 @@ class AjaxSpinner
     }
 }
 
-export const onInit = () => {
-    const pluginRoot = document.querySelector('[data-import-plugin]');
-    window.ajaxSpinner = new AjaxSpinner(pluginRoot);
-};
+// export const onInit = () => {
+//     const pluginRoot = document.querySelector('[data-import-plugin]');
+//     window.ajaxSpinner = new AjaxSpinner(pluginRoot);
+// };

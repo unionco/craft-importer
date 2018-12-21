@@ -106,6 +106,7 @@ class Import extends Plugin
                 $event->rules['import/sections/new'] = 'import/section/new-section-modal';
                 $event->rules['import/sections/types/<id:\d+>'] = 'import/section/types';
                 $event->rules['import/upload'] = 'import/import/upload';
+                $event->rules['import/preview-entries'] = 'import/import/preview-entries';
                 $event->rules['import/submit'] = 'import/import/submit';
             }
         );

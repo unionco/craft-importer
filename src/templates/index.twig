@@ -42,8 +42,13 @@
 
 {# The content of the CP Section#}
 {% set content %}
-<div data-import-plugin="true">
-    {% include 'import/_/components/fileUpload' %}
+<div>
+    {% include 'import/fileUpload/component' %}
+
+    {% include 'import/sectionPreview/container' %}
+    
+    {% include 'import/entryPreview/container' %}
+
     {% include 'import/_/components/submit' with {
         action: '/admin/import/submit',
     } only %}

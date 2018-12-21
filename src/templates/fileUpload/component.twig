@@ -1,18 +1,10 @@
 {% import '_includes/forms' as forms %}
 <div class="FileUpload" id="FileUpload">
     <div class="FileUpload-files">
-        <input type="file" id="file" class="FileUpload-input" name="file" />
-        {# {{ forms.file({
-            id: 'file',
-            name: 'file',
-            class: 'btn submit',
-        }) }} #}
+        <input type="file" id="file" class="FileUpload-input" name="file"/>
         <label for="file">
             <span>Choose a file</span></label>
         <span data-import-file-instructions="1">or drag/drop a file here.</span>
         <span data-import-file-clear="1" class="hidden">Clear</span>
     </div>
-    {# <div class="FileUpload-results">
-        <div data-import-file-upload-result="1"></div>
-    </div> #}
 </div>
