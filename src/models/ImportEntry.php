@@ -42,6 +42,9 @@ class ImportEntry extends AbstractEntry implements Serializable
 
     public static function matchSection($sectionHandle)
     {
+        if ($sectionHandle instanceof \stdClass) {
+            $sectionHandle = $sectionHandle->handle;
+        }
         if ($section = Craft::$app->getSections()->getSectionByHandle($sectionHandle)) {
             return $section;
         }
@@ -54,6 +57,9 @@ class ImportEntry extends AbstractEntry implements Serializable
 
     public static function matchEntryType($entryTypeHandle)
     {
+        if ($entryTypeHandle instanceof \stdClass) {
+            $entryTypeHandle = $entryTypeHandle->handle;
+        }
         if ($entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle)) {
             return $entryTypes[0];
         }

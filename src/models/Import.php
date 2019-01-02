@@ -10,13 +10,15 @@ use unionco\import\models\UserInput;
 
 class Import extends Model implements Runnable
 {
-    protected $fileImport;
+    protected $entries;
+    protected $sectionMapping;
     protected $userInput;
     protected $results;
     
-    public function __construct(FileImport $fileImport, UserInput $userInput)
+    public function __construct(array $entries, array $sectionMapping, UserInput $userInput)
     {
-        $this->fileImport = $fileImport;
+        $this->entries = $entries;
+        $this->sectionMapping = $sectionMapping;
         $this->userInput = $userInput;
     }
 
@@ -45,15 +47,14 @@ class Import extends Model implements Runnable
 
     private function merge()
     {
-        $fileEntries = $this->fileImport->getEntries();
         $userEntries = $this->userInput->getEntries();
         $mergedEntries = [];
 
-        if (count($fileEntries) != count($userEntries)) {
+        if (count($this->entries) != count($userEntries)) {
             //throw new \Exception('Number of entries do not match');
         }
 
-        foreach ($fileEntries as $entry) {
+        foreach ($this->entries as $entry) {
             // Find its corresponding user input entry
             $userEntry = null;
             foreach ($userEntries as $userEntryCandidate) {

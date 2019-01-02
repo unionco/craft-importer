@@ -12,7 +12,7 @@ export default class SectionPreview {
         this.node.innerHTML = data;
         this.nextButton = this.node.querySelector('#SectionPreview-NextButton');
         this.nextButton.addEventListener('click', this.submit.bind(this));
-        this.setNextHidden(true);
+        this.checkStatus();
         this.mapSections();
     }
 

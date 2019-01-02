@@ -179,7 +179,7 @@
       max-height: 0;
       overflow: hidden; }
       .ImportResult-entry > .content.active {
-        max-height: 800px;
+        max-height: 100vh;
         overflow: scroll; }
 
 .log-info {

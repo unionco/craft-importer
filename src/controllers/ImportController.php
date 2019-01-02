@@ -19,6 +19,7 @@ use unionco\import\models\SectionPreview;
 use unionco\import\models\EntryPreview;
 use unionco\import\models\JsonFileImport;
 use unionco\import\models\UserInput;
+use unionco\import\models\ImportEntry;
 
 class ImportController extends Controller
 {
@@ -91,13 +92,13 @@ class ImportController extends Controller
         $formData = Craft::$app->getRequest()->getBodyParams();
         $serialized = $formData['serialized'];
         $sectionPreview = unserialize($serialized);
-        $sectionMap = $formData['sectionMapping'];
+        $sectionMap = $formData['sectionMapping'] ?? [];
 
         $entryPreview = new EntryPreview($sectionPreview, $sectionMap);
 
         return $this->renderTemplate('import/entryPreview/response', [
             'entryPreview' => $entryPreview,
-            'serializedEntryPreview' => serialize($entryPreview),
+            //'serializedEntryPreview' => serialize($entryPreview),
         ]);
     }
 
@@ -108,31 +109,28 @@ class ImportController extends Controller
 
         $formData = Craft::$app->getRequest()->getBodyParams();
 
-        $serialized = $formData['serialized'];
-        $entryPreview = unserialize($serialized);
+        //$serialized = $formData['serialized'];
+        //$entryPreview = unserialize($serialized);
 
-        $importFilePath = $formData['importFile'];
-        $parts = explode('.', $importFilePath);
-        $length = count($parts);
-
-        $extension = $parts[$length - 1];
-
-        switch (strtolower($extension)) {
-            case 'json':
-                $fileImport = new JsonFileImport($importFilePath);
-                break;
-            default:
-                return;
-        }
-
+        $sectionMapping = json_decode($formData['sectionMapping'] ?? "[]", true);
+        
+        $entries = json_decode($formData['entries'] ?? "[]");
+        $entries = array_map(function ($entry) {
+            return new ImportEntry($entry->entry);
+        }, $entries);
+        
         $userInput = new UserInput($formData);
+
         if (!$userInput->valid()) {
             throw new \Exception('invalid');
         }
 
-        $import = new Import($fileImport, $userInput);
-        $result = $import->run();
+        $import = new Import($entries, $sectionMapping, $userInput);
+        $results = $import->run();
 
-        return json_encode($result);
+        return $this->renderTemplate('import/results/response', [
+            'results' => $results,
+        ]);
+        //return json_encode($result);
     }
 }

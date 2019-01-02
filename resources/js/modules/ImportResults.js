@@ -1,18 +1,37 @@
 import ImportResult from './ImportResult';
 
-class ImportResults
+export default class ImportResults
 {
     constructor(node) {
         this.node = node;
-        console.log(node);
-        this.resultsContainer = document.createElement('div');
-        this.resultsContainer.classList.add('ImportResult');
-        
-        const title = document.createElement('h1');
-        title.innerText = 'Results';
-        this.resultsContainer.appendChild(title);
+        this.results = [];
 
-        this.node.appendChild(this.resultsContainer);
+        this.resultsContainer = this.node.querySelector('.ImportResult');
+        this.title = this.resultsContainer.querySelector('h1');
+    }
+
+    parse(data) {
+        this.title.innerText = 'Results';
+        const split = data.split(/\<\/div\>\s+\<div class="ImportResult-entry"/);
+        if (split.length > 1) {
+            split.forEach((result, index) => {
+                result = result + "</div>";
+                if (index > 0) {
+                    result = '<div class="ImportResult-entry" ' + result;
+                }
+                const template = document.createElement('template');
+                template.innerHTML = result.trim();
+
+                this.resultsContainer.appendChild(template.content.firstChild);
+                this.results.push(new ImportResult(template.content.firstChild));
+            })
+        } else {
+            const template = document.createElement('template');
+            template.innerHTML = data.trim();
+            const html = template.content.firstChild;
+            const node = this.resultsContainer.appendChild(html);
+            this.results.push(new ImportResult(node));
+        }
     }
 
     parseResults(data, index) {
@@ -62,10 +81,3 @@ class ImportResults
         return markup;
     }
 }
-
-export const onInit = () => {
-    const resultsContainer = document.querySelector('.ImportResults');
-    if (resultsContainer) {
-        window.importResults = new ImportResults(resultsContainer);
-    }
-};

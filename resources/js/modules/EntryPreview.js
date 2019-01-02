@@ -22,7 +22,9 @@ export default class EntryPreview {
     }
 
     submit() {
-        const serialized = document.querySelector('#EntryPreview-serialized').value;
+        //const serialized = document.querySelector('#EntryPreview-serialized').value;
+        const sectionMapping = this.node.querySelector('#EntryPreview-sectionMapping').value;
+        const entries = this.node.querySelector('#EntryPreview-entries').value;
         const requests = [];
         window.Import.ajaxSpinner.show('Processing entries...');
         this.entries.forEach(entry => {
@@ -32,7 +34,8 @@ export default class EntryPreview {
             }
 
             const formData = new FormData();
-            formData.append('serialized', serialized);
+            formData.append('sectionMapping', sectionMapping);
+            formData.append('entries', entries);
 
             // Foreach input in this entry
             const inputs = entry.node.querySelectorAll('input, select');

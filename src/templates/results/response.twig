@@ -1,0 +1,19 @@
+{% for result in results %}
+    <div class="ImportResult-entry" id="result-{{ result.original.id }}">
+        <div class="preview {{ result.success ? 'success' : 'fail' }}">
+            <span>ID: {{ result.original.id }}</span>
+        </div>
+        <div class="content">
+            <pre>
+                {% for line in result.log %}
+                    {% if "error" in line %}
+                        {% set classes = "log-error" %}
+                    {% else %}
+                        {% set classes = "log-info" %}
+                    {% endif %}
+                    <span class="{{ classes }}">{{ line }}</span>
+                {% endfor %}
+            </pre>
+        </div>
+    </div>
+{% endfor %}

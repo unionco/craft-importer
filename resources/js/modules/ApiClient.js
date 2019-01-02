@@ -32,13 +32,11 @@ export class ApiClient {
         this.index = 0;
 
         this.req(this.entryImportUrl, this.requests[this.index])
-            .then(resp => resp.json())
+            .then(resp => resp.text())
             .then(data => this.entryRequestCallback(data))
             .catch(err => console.log(err))
             .finally(() => {
-                if (window.ajaxSpinner) {
-                    window.ajaxSpinner.hide();
-                }
+                window.Import.ajaxSpinner.hide();
             });
     }
 
@@ -57,16 +55,14 @@ export class ApiClient {
         window.Import.importResults.parse(data);
         this.index++;
 
-
         const count = this.requests.length;
-        window.Import.ajaxSpinner.show(`Processing ${this.index+1}/${count} entries...`);
+        window.Import.ajaxSpinner.show(`Processing ${this.index}/${count} entries...`);
 
-        console.log(data);
         if (this.index >= this.requests.length) {
             return Promise.resolve(true);
         }
-        return this.req(this.requests[this.index])
-            .then(resp => resp.json())
+        return this.req(this.entryImportUrl, this.requests[this.index])
+            .then(resp => resp.text())
             .then(data => this.entryRequestCallback(data));
     }
 }

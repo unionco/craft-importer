@@ -2,13 +2,8 @@ import '../sass/Import.scss';
 
 import FileUpload from './modules/FileUpload';
 import SectionPreview from './modules/SectionPreview';
-import {
-  onInit as submitButton
-} from './modules/SubmitButton';
 import AjaxSpinner from './modules/AjaxSpinner';
-import {
-  onInit as importResults
-} from './modules/ImportResults';
+import ImportResults from './modules/ImportResults';
 import {
   ApiClient
 } from './modules/ApiClient';
@@ -27,9 +22,11 @@ class Import {
     const entryPreview = document.querySelector('#EntryPreview');
     this.entryPreview = new EntryPreview(entryPreview);
 
+    const importResults = document.querySelector('#ImportResults');
+    this.importResults = new ImportResults(importResults);
+
     const body = document.querySelector('body');
     this.ajaxSpinner = new AjaxSpinner(body);
-    importResults();
   }
 }
 

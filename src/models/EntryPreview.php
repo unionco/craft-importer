@@ -46,4 +46,9 @@ class EntryPreview implements Serializable
         // $this->sectionPreview = $unserialized['sectionPreview'];
         // $this->entries = $unserialized['entries'];
     }
+    
+    public function getSectionMapping()
+    {
+        return $this->sectionMapping;
+    }
 }
