@@ -5,7 +5,6 @@ export class ApiClient {
         this.entryImportUrl = '/admin/import/submit';
         this.requests = null;
         this.index = 0;
-        //window.resultsHandler = new ResultsHandler();
     }
 
     fileUploadRequest(formData, callback) {
@@ -30,11 +29,14 @@ export class ApiClient {
     entryRequest(requests) {
         this.requests = requests;
         this.index = 0;
-
+        window.Import.entryPreview.setSubmitHidden(true);
         this.req(this.entryImportUrl, this.requests[this.index])
             .then(resp => resp.text())
             .then(data => this.entryRequestCallback(data))
-            .catch(err => console.log(err))
+            .catch(err => {
+                console.log(err);
+                window.Import.entryPreview.setSubmitHidden(false);
+            })
             .finally(() => {
                 window.Import.ajaxSpinner.hide();
             });

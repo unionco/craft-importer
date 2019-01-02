@@ -190,10 +190,8 @@
   font-family: monospace;
   color: #da5a47; }
 
-.SubmitButton {
-  display: none; }
-  .SubmitButton.active {
-    display: block; }
+.SubmitButton-wrapper {
+  max-width: 100px; }
 
 .AjaxSpinner-modal {
   display: none; }

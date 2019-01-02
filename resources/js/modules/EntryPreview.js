@@ -5,6 +5,7 @@ export default class EntryPreview {
         this.entries = [];
         this.start = this.start.bind(this);
         this.submitButton = null;
+        this.setSubmitHidden = this.setSubmitHidden.bind(this);
     }
 
     start(data) {
@@ -21,6 +22,13 @@ export default class EntryPreview {
         });
     }
 
+    setSubmitHidden(hidden = false) {
+        if (hidden) {
+            this.submitButton.classList.add('hidden');
+        } else {
+            this.submitButton.classList.remove('hidden');
+        }
+    }
     submit() {
         //const serialized = document.querySelector('#EntryPreview-serialized').value;
         const sectionMapping = this.node.querySelector('#EntryPreview-sectionMapping').value;

@@ -43,15 +43,12 @@
 {# The content of the CP Section#}
 {% set content %}
 <div>
-    {% include 'import/fileUpload/component' %}
+    {% include 'import/_components/fileUpload' %}
 
     {% include 'import/sectionPreview/container' %}
     
     {% include 'import/entryPreview/container' %}
 
-    {% include 'import/_/components/submit' with {
-        action: '/admin/import/submit',
-    } only %}
-    {% include 'import/_/components/results' %}
+    {% include 'import/results/container' %}
 </div>
 {% endset %}

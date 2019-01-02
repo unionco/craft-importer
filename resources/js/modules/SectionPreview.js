@@ -57,7 +57,9 @@ export default class SectionPreview {
         for (const handle in this.sectionMapping) {
             formData.append('sectionMapping[' + handle + ']', this.sectionMapping[handle]);
         }
-        // formData.append('sectionMapping', this.sectionMapping);
-        window.Import.apiClient.submitSections(formData, window.Import.entryPreview.start);
+        window.Import.apiClient.submitSections(formData, (data) => {
+            this.setNextHidden(true); // Hide the next button
+            window.Import.entryPreview.start(data);
+        });
     }
 }
