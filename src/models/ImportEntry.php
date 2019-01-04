@@ -5,6 +5,7 @@ namespace unionco\import\models;
 use Craft;
 use craft\elements\User;
 use Serializable;
+use unionco\import\models\NewSection;
 use unionco\import\models\AbstractEntry;
 
 class ImportEntry extends AbstractEntry implements Serializable
@@ -16,7 +17,7 @@ class ImportEntry extends AbstractEntry implements Serializable
         $this->id = intval($data->id);
         $this->title = $data->title;
         $this->slug = $data->slug;
-        $this->section = static::matchSection($data->section);
+        $this->section = static::matchSection($data->section) ?? new NewSection($data->section);
         $this->type = static::matchEntryType($data->type);
         $this->author = $data->author;
         $this->sites = Craft::$app->sites->getAllSites();

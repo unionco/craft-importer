@@ -46,10 +46,10 @@ class FileImport
     public function getNewSections(): array
     {
         $sections = array_filter($this->sections, function ($section) {
-            return is_array($section);
+            return ($section instanceof \unionco\import\models\NewSection);
         });
-        $unique = array_unique($sections, SORT_REGULAR);
-        
+        $unique = NewSection::unique($sections);
+                
         return $unique;
     }
 }
