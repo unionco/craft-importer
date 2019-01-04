@@ -28,16 +28,5 @@
         "psr-4": {
           "unionco\\import\\": "src/"
         }
-    },
-    "extra": {
-        "name": "Import",
-        "handle": "import",
-        "hasCpSettings": true,
-        "hasCpSection": true,
-        "changelogUrl": "https://raw.githubusercontent.com/x/import/master/CHANGELOG.md",
-        "components": {
-            "entry": "unionco\\import\\services\\Entry"
-        },
-        "class": "unionco\\import\\Import"
     }
 }

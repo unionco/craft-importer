@@ -9,10 +9,10 @@ class EntryImportPreview implements Serializable
 {
     public $entry;
     
-    public function __construct(ImportEntry $entry, array $sectionMapping)
+    public function __construct(FileImportEntry $entry, array $sectionMapping)
     {
-        if (is_array($entry->section) && key_exists('handle', $entry->section)) {
-            $handle = $entry->section['handle'];
+        if ($entry->section instanceof \unionco\import\models\NewSection) {
+            $handle = $entry->section->handle;
 
             if (key_exists($handle, $sectionMapping)) {
                 $sectionId = $sectionMapping[$handle];

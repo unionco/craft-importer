@@ -17,7 +17,7 @@ use craft\elements\MatrixBlock;
 use DateTime;
 use unionco\import\Import;
 use unionco\import\models\EntryResult;
-use unionco\import\models\ImportEntry;
+use unionco\import\models\FileImportEntry;
 
 /**
  * Entry Service
@@ -55,7 +55,7 @@ class EntryService extends Component
         $this->currentEntry->logMsg("[{$context}] [siteId: {$siteId}] [entryId: {$entry->id}] $msg", $level);
     }
 
-    public function updateOrCreate(ImportEntry $importEntry): EntryResult
+    public function updateOrCreate(FileImportEntry $importEntry): EntryResult
     {
         $this->currentEntry = new EntryResult($importEntry);
         

@@ -19,11 +19,21 @@ class UserImportEntry extends AbstractEntry implements Skippable
     public function __construct(array $params = [])
     {
         $this->skip = false;
-        $entry->setId($id);
-        $entry->setSection($section);
-        $entry->setType($type);
-        $entry->setAuthor($author);
-        $entry->setSites($sites);
+
+        $id = $params['id'];
+        $this->setId($id);
+
+        $section = $params['section'];
+        $this->setSection($section);
+
+        $type = $params['type'];
+        $this->setType($type);
+
+        $author = $params['author'];
+        $this->setAuthor($author);
+
+        $sites = $params['sites'];
+        $this->setSites($sites);
     }
 
     public function setId(int $id)
@@ -33,7 +43,7 @@ class UserImportEntry extends AbstractEntry implements Skippable
 
     public function setSection(int $section)
     {
-        $this->section = intval($sectionStr);
+        $this->section = $section;
     }
 
     public function setType(int $type)
@@ -46,13 +56,8 @@ class UserImportEntry extends AbstractEntry implements Skippable
         $author = $author;
     }
 
-    public function setSites(string $sitesStr)
+    public function setSites(array $sites)
     {
-        $sites = explode(',', $sitesStr);
-        $sites = array_map(function ($siteId) {
-            return intval($siteId);
-        }, $sites);
-
         // Check that these are avalid site ids
         $validSiteIds = Craft::$app->sites->getAllSiteIds();
         foreach ($sites as $siteId) {
@@ -74,5 +79,14 @@ class UserImportEntry extends AbstractEntry implements Skippable
     public function getSkipMessage(): string
     {
         return $this->skipMessage;
+    }
+
+    public function valid(): bool
+    {
+        return $this->skip
+        && $this->id
+        && is_numeric($this->id)
+        && $this->section
+        && is_numeric($this->section);
     }
 }

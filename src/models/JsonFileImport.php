@@ -3,7 +3,7 @@
 namespace unionco\import\models;
 
 use unionco\import\models\FileImport;
-use unionco\import\models\ImportEntry;
+use unionco\import\models\FileImportEntry;
 
 class JsonFileImport extends FileImport
 {
@@ -15,7 +15,7 @@ class JsonFileImport extends FileImport
         $entries = [];
 
         foreach ($content as $entry) {
-            $entries[] = new ImportEntry($entry);
+            $entries[] = new FileImportEntry($entry);
         }
 
         $this->entries = $entries;

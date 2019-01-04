@@ -5,21 +5,21 @@ namespace unionco\import\models;
 use craft\base\Model;
 use unionco\import\Import as ImportPlugin;
 use unionco\import\interfaces\Runnable;
-use unionco\import\models\UserInput;
+use unionco\import\models\userImportParams;
 
-class Import extends Model implements Runnable
+class ImportRunner extends Model implements Runnable
 {
     /**
-     * array of ImportEntry models
+     * array of FileImportEntry models
      */
     protected $entries;
-    protected $userInput;
+    protected $userImportParams;
     protected $results;
 
-    public function __construct(array $entries, UserInput $userInput)
+    public function __construct(array $entries, UserImportParameters $userImportParams)
     {
         $this->entries = $entries;
-        $this->userInput = $userInput;
+        $this->userImportParams = $userImportParams;
     }
 
     public function run()
@@ -37,11 +37,11 @@ class Import extends Model implements Runnable
     }
 
     /**
-     * Combine existing ImportEntry objects (from file import) with user changes (UserImport/UserImportEntry)
+     * Combine existing FileImportEntry objects (from file import) with user changes (UserImport/UserImportEntry)
      */
     private function merge(): array
     {
-        $userEntries = $this->userInput->getEntries();
+        $userEntries = $this->userImportParams->getEntries();
         $merged = [];
 
         foreach ($this->entries as $entry) {

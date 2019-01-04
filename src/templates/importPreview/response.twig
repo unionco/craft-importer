@@ -1,8 +1,8 @@
 <h2>Entries</h2>
-{% for index, entry in importPreview.entries %}
+{% for index, importPreviewEntry in importPreview.entries %}
     {% include 'import/importPreview/entry' with {
         index: index,
-        entry: entry,
+        importPreviewEntry: importPreviewEntry,
     } only %}
 {% endfor %}
 

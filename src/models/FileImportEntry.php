@@ -8,7 +8,7 @@ use Serializable;
 use unionco\import\models\NewSection;
 use unionco\import\models\AbstractEntry;
 
-class ImportEntry extends AbstractEntry implements Serializable
+class FileImportEntry extends AbstractEntry implements Serializable
 {
     public $fields;
 

@@ -2,18 +2,17 @@
 
 namespace unionco\import\models;
 
-use craft\base\Model;
 use craft\elements\Entry;
 use unionco\import\services\EntryService;
 
-class EntryResult extends Model
+class EntryResult
 {
     public $success;
     public $log;
     public $original;
     public $entry;
 
-    public function __construct(ImportEntry $entry)
+    public function __construct(FileImportEntry $entry)
     {
         $this->original = $entry;
         $this->log = [];

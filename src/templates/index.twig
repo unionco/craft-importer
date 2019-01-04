@@ -14,7 +14,7 @@
 #}
 
 {% extends "_layouts/cp" %}
-{% import "_includes/forms" as forms %}
+{# {% import "_includes/forms" as forms %} #}
 
 {% do 
     view.registerAssetBundle("unionco\\import\\assetbundles\\import\\ImportAsset") %}
@@ -28,17 +28,17 @@
 {% set title = "Import" %}
 
 {# The URL to this plugin's base CP section #}
-{% set pluginCpUrl = url('import') %}
+{# {% set pluginCpUrl = url('import') %} #}
 
 {# Get a URL to an image in our AssetBundle #}
-{% set iconUrl = view.getAssetManager().getPublishedUrl('@unionco/import/assetbundles/indexcpsection/dist', true) ~ '/img/Index-icon.svg' %}
+{# {% set iconUrl = view.getAssetManager().getPublishedUrl('@unionco/import/assetbundles/import/dist', true) ~ '/img/icon.svg' %} #}
 
 {# Content that should appear in the page header#}
-{% set extraPageHeaderHtml %}
+{# {% set extraPageHeaderHtml %}
 <div class="buttons">
     <a href="{{ pluginCpUrl }}" class="btn submit add icon">{{ "Click Me!"|t('import') }}</a>
 </div>
-{% endset %}
+{% endset %} #}
 
 {# The content of the CP Section#}
 {% set content %}

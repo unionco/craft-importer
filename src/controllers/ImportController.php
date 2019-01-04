@@ -14,13 +14,11 @@ use Craft;
 use craft\helpers\App;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use unionco\import\Import as ImportPlugin;
-use unionco\import\models\Import;
-use unionco\import\models\SectionPreview;
+use unionco\import\models\FileImportEntry;
 use unionco\import\models\ImportPreview;
+use unionco\import\models\ImportRunner;
 use unionco\import\models\JsonFileImport;
-//use unionco\import\models\UserInput;
-use unionco\import\models\ImportEntry;
+use unionco\import\models\SectionPreview;
 use unionco\import\models\UserImportParameters;
 
 class ImportController extends Controller
@@ -90,7 +88,7 @@ class ImportController extends Controller
         ]);
     }
 
-    public function actionSubmit(): \yii\web\Reponse
+    public function actionSubmit(): \craft\web\Response
     {
         App::maxPowerCaptain();
         $this->requirePostRequest();
@@ -99,16 +97,16 @@ class ImportController extends Controller
 
         $entries = json_decode($formData['entries'] ?? "[]");
         $entries = array_map(function ($entry) {
-            return new ImportEntry($entry->entry);
+            return new FileImportEntry($entry->entry);
         }, $entries);
-        
+
         $userInput = new UserImportParameters($formData);
 
         if (!$userInput->valid()) {
             throw new \Exception('invalid');
         }
 
-        $import = new Import($entries, $userInput);
+        $import = new ImportRunner($entries, $userInput);
         $results = $import->run();
 
         return $this->renderTemplate('import/results/response', [

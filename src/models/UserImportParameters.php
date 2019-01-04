@@ -42,4 +42,9 @@ class UserImportParameters extends Model
     {
         return $this->entries;
     }
+
+    public function valid(): bool
+    {
+        return !$this->errors;
+    }
 }

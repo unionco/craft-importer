@@ -1,5 +1,6 @@
 export class ApiClient {
     constructor() {
+        this.importRequestCallback = this.importRequestCallback.bind(this);
         this.uploadUrl = '/admin/import/upload';
         this.sectionsUrl = '/admin/import/preview-entries';
         this.importUrl = '/admin/import/submit';
@@ -18,6 +19,7 @@ export class ApiClient {
     }
 
     submitSections(formData, callback) {
+        window.Import.ajaxSpinner.show('Processing sections...');
         this.req(this.sectionsUrl, formData)
             .then(resp => resp.text())
             .then(data => callback(data))
@@ -63,8 +65,9 @@ export class ApiClient {
         if (this.index >= this.requests.length) {
             return Promise.resolve(true);
         }
+
         return this.req(this.importUrl, this.requests[this.index])
             .then(resp => resp.text())
-            .then(data => this.entryRequestCallback(data));
+            .then(data => this.importRequestCallback(data));
     }
 }
