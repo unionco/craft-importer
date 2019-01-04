@@ -59,7 +59,7 @@ export default class SectionPreview {
         }
         window.Import.apiClient.submitSections(formData, (data) => {
             this.setNextHidden(true); // Hide the next button
-            window.Import.entryPreview.start(data);
+            window.Import.importPreview.start(data);
         });
     }
 }

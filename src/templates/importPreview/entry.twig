@@ -1,5 +1,5 @@
 {% import '_includes/forms' as forms %}
-<div class="EntryPreview-entry" id="entry-{{ entry.entry.id}}">
+<div class="ImportPreview-entry" id="entry-{{ entry.entry.id}}">
     <div class="preview">
         <span>ID: {{ entry.entry.id}}</span>
         <span>Title: {{ entry.entry.title }}</span>
@@ -28,19 +28,12 @@
             value: entry.entry.slug,
             required: true,
         }) }}
-
-        {% if 'new' in (entry.entry.section | keys) %}
-            {{ forms.hidden({
-                id: 'section-handle-' ~ entry.entry.id,
-                value: entry.section.handle
-            }) }}
-        {% endif %}
         
         {{ forms.selectField({
             id: 'section-' ~ entry.entry.id,
             label: 'Section',
             name: 'section[' ~ entry.entry.id ~ ']',
-            options: entry.entry.getSections,
+            options: import.sections.getSectionOptions,
             value: entry.entry.section.id ?? 0,
             required: true,
         }) }}
@@ -49,7 +42,7 @@
             id: 'type-' ~ entry.entry.id,
             label: 'Entry Type',
             name: 'type[' ~ entry.entry.id ~ ']',
-            options: entry.entry.getEntryTypes,
+            options: import.sections.getEntryTypeOptions(entry.entry.section.id),
             value: entry.entry.type.id ?? 0,
             required: true,
         }) }}

@@ -4,7 +4,7 @@ const camelCase = str => {
     }).replace(/\s+/g, '');
 };
 
-export default class EntryPreviewEntry {
+export default class ImportPreviewEntry {
     constructor(node) {
         this.node = node;
         this.sectionSelect = this.node.querySelector('[name*=section]');

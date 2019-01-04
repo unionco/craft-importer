@@ -21,8 +21,8 @@ class ImportEntry extends AbstractEntry implements Serializable
         $this->author = $data->author;
         $this->sites = Craft::$app->sites->getAllSites();
         $this->enabled = $data->enabled;
-        $this->postDate = $data->postDate; //->format('Y-m-d');
-        $this->expiryDate = $data->expiryDate; //->format('Y-m-d');
+        $this->postDate = $data->postDate;
+        $this->expiryDate = $data->expiryDate;
         $this->setFields($data);
     }
 
@@ -40,59 +40,28 @@ class ImportEntry extends AbstractEntry implements Serializable
         $this->fields = $data;
     }
 
-    public static function matchSection($sectionHandle)
+    public static function matchSection($sectionHandle): ?\craft\models\Section
     {
         if ($sectionHandle instanceof \stdClass) {
             $sectionHandle = $sectionHandle->handle;
         }
-        if ($section = Craft::$app->getSections()->getSectionByHandle($sectionHandle)) {
-            return $section;
-        }
 
-        return [
-            'handle' => $sectionHandle,
-            'new' => true,
-        ];
+        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+
+        return $section;
     }
 
-    public static function matchEntryType($entryTypeHandle)
+    public static function matchEntryType($entryTypeHandle): ?\craft\models\EntryType
     {
         if ($entryTypeHandle instanceof \stdClass) {
             $entryTypeHandle = $entryTypeHandle->handle;
         }
-        if ($entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle)) {
-            return $entryTypes[0];
-        }
-
-        return false;
+        $entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle);
+        
+        return $entryTypes[0];
     }
 
-    public function getSections()
-    {
-        return array_map(function ($section) {
-            return [
-                'name' => $section->name,
-                'value' => $section->id,
-                'label' => $section->name,
-            ];
-        }, Craft::$app->getSections()->getAllSections());
-    }
-
-    public function getEntryTypes()
-    {
-        if (isset($this->section->id)) {
-            return array_map(function ($entryType) {
-                return [
-                    'name' => $entryType->name,
-                    'value' => $entryType->id,
-                    'label' => $entryType->name,
-                ];
-            }, Craft::$app->getSections()->getEntryTypesBySectionId($this->section->id));
-        }
-        return [];
-    }
-
-    public function getAuthors()
+    public function getAuthors(): array
     {
         return array_map(function ($author) {
             return [
@@ -102,7 +71,8 @@ class ImportEntry extends AbstractEntry implements Serializable
             ];
         }, User::find()->all());
     }
-    public function getSites()
+
+    public function getSites(): array
     {
         return array_map(function ($site) {
             return [
@@ -113,7 +83,7 @@ class ImportEntry extends AbstractEntry implements Serializable
         }, Craft::$app->sites->getAllSites());
     }
 
-    public function resolveDiff(AbstractEntry $input): void
+    public function resolveDiff(AbstractEntry $input)
     {
         if ($input->section !== intval($this->section->id)) {
             $this->section = Craft::$app->getSections()->getSectionById($input->section);

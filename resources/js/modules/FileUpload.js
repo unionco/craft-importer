@@ -1,4 +1,4 @@
-import EntryPreview from './EntryPreview';
+import ImportPreview from './ImportPreview';
 import NewSectionAlias from './NewSectionAlias';
 
 const removeDragData = e => {

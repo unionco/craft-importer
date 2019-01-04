@@ -3,7 +3,7 @@
 namespace unionco\import\models;
 
 use Serializable;
-
+use unionco\import\models\FileImport;
 class SectionPreview implements Serializable
 {
     protected $fileImport;
@@ -22,22 +22,22 @@ class SectionPreview implements Serializable
         $this->newSections = $this->fileImport->getNewSections();
     }
 
-    public function getFileImport()
+    public function getFileImport(): FileImport
     {
         return $this->fileImport;
     }
 
-    public function getEntries()
+    public function getEntries(): array
     {
         return $this->fileImport->entries;
     }
 
-    public function getNewSections()
+    public function getNewSections(): ?array
     {
         return $this->newSections;
     }
 
-    public function getExistingSections()
+    public function getExistingSections(): ?array
     {
         return $this->existingSections;
     }

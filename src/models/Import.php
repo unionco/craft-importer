@@ -2,23 +2,23 @@
 
 namespace unionco\import\models;
 
-use unionco\import\Import as ImportPlugin;
 use craft\base\Model;
-use unionco\import\interfaces\FileImport;
+use unionco\import\Import as ImportPlugin;
 use unionco\import\interfaces\Runnable;
 use unionco\import\models\UserInput;
 
 class Import extends Model implements Runnable
 {
+    /**
+     * array of ImportEntry models
+     */
     protected $entries;
-    protected $sectionMapping;
     protected $userInput;
     protected $results;
-    
-    public function __construct(array $entries, array $sectionMapping, UserInput $userInput)
+
+    public function __construct(array $entries, UserInput $userInput)
     {
         $this->entries = $entries;
-        $this->sectionMapping = $sectionMapping;
         $this->userInput = $userInput;
     }
 
@@ -29,39 +29,26 @@ class Import extends Model implements Runnable
         $entries = $this->merge();
         $results = [];
 
-        $count = count($entries);
-        $i = 1;
-        //echo "Starting import of {$count} entries" . PHP_EOL;
         foreach ($entries as $entry) {
-            $result = $service->updateOrCreate($entry);
-            if (!$result->success) {
-            //    throw new \Exception('Import failed');
-            }
-            //echo "Finished entry {$index}" . PHP_EOL;
-            $i++;
-            $results[] = $result;
+            $results[] = $service->updateOrCreate($entry);
         }
 
         return $results;
     }
 
-    private function merge()
+    /**
+     * Combine existing ImportEntry objects (from file import) with user changes (UserImport/UserImportEntry)
+     */
+    private function merge(): array
     {
         $userEntries = $this->userInput->getEntries();
-        $mergedEntries = [];
-
-        if (count($this->entries) != count($userEntries)) {
-            //throw new \Exception('Number of entries do not match');
-        }
+        $merged = [];
 
         foreach ($this->entries as $entry) {
             // Find its corresponding user input entry
             $userEntry = null;
             foreach ($userEntries as $userEntryCandidate) {
                 if ($userEntryCandidate->id == $entry->id) {
-                    if ($userEntryCandidate->skipped()) {
-
-                    }
                     $userEntry = $userEntryCandidate;
                     break;
                 }

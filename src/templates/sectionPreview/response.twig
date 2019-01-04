@@ -11,7 +11,10 @@
     {% include 'import/sectionPreview/new' with {
         handle: section.handle,
         index: index,
-        options: sectionOptions
+        options: import.sections.getSectionOptions({
+            value: 0,
+            label: 'Map Section'
+        })
     } only %}
 {% endfor %}
 

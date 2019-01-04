@@ -14,12 +14,14 @@ use Craft;
 use craft\helpers\App;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use unionco\import\Import as ImportPlugin;
 use unionco\import\models\Import;
 use unionco\import\models\SectionPreview;
-use unionco\import\models\EntryPreview;
+use unionco\import\models\ImportPreview;
 use unionco\import\models\JsonFileImport;
-use unionco\import\models\UserInput;
+//use unionco\import\models\UserInput;
 use unionco\import\models\ImportEntry;
+use unionco\import\models\UserImportParameters;
 
 class ImportController extends Controller
 {
@@ -34,7 +36,7 @@ class ImportController extends Controller
      */
     protected $allowAnonymous = ['upload', 'submit'];
 
-    public function actionUpload()
+    public function actionUpload(): ?\yii\web\Response
     {
         $uploadedFiles = UploadedFile::getInstancesByName('files');
 
@@ -56,76 +58,57 @@ class ImportController extends Controller
                 $import = new JsonFileImport($path);
                 break;
             default:
-                return;
+                throw new \Exception('Unsupported file format');
+                return null;
         }
 
         $sectionPreview = new SectionPreview($import);
-        //$preview = new ImportPreview($import);
-
-        $sectionOptions = array_map(function ($section) {
-            return [
-                'value' => $section->id,
-                'label' => $section->name,
-            ];
-        }, Craft::$app->getSections()->getAllSections());
-
-        $defaultOption = [
-            'value' => 0,
-            'label' => 'Map Section',
-        ];
-        $sectionOptions = array_merge([$defaultOption], $sectionOptions);
 
         $serializedSectionPreview = serialize($sectionPreview);
 
         return $this->renderTemplate('import/sectionPreview/response', [
             'sectionPreview' => $sectionPreview,
-            'sectionOptions' => $sectionOptions,
             'file' => $path,
             'serializedSectionPreview' => $serializedSectionPreview,
         ]);
     }
 
-    public function actionPreviewEntries()
+    public function actionPreviewEntries(): \yii\Web\Response
     {
         $this->requirePostRequest();
 
         $formData = Craft::$app->getRequest()->getBodyParams();
         $serialized = $formData['serialized'];
         $sectionPreview = unserialize($serialized);
+
         $sectionMap = $formData['sectionMapping'] ?? [];
 
-        $entryPreview = new EntryPreview($sectionPreview, $sectionMap);
+        $importPreview = new ImportPreview($sectionPreview, $sectionMap);
 
-        return $this->renderTemplate('import/entryPreview/response', [
-            'entryPreview' => $entryPreview,
-            //'serializedEntryPreview' => serialize($entryPreview),
+        return $this->renderTemplate('import/importPreview/response', [
+            'importPreview' => $importPreview,
         ]);
     }
 
-    public function actionSubmit()
+    public function actionSubmit(): \yii\web\Reponse
     {
         App::maxPowerCaptain();
         $this->requirePostRequest();
 
         $formData = Craft::$app->getRequest()->getBodyParams();
 
-        //$serialized = $formData['serialized'];
-        //$entryPreview = unserialize($serialized);
-
-        $sectionMapping = json_decode($formData['sectionMapping'] ?? "[]", true);
-        
         $entries = json_decode($formData['entries'] ?? "[]");
         $entries = array_map(function ($entry) {
             return new ImportEntry($entry->entry);
         }, $entries);
         
-        $userInput = new UserInput($formData);
+        $userInput = new UserImportParameters($formData);
 
         if (!$userInput->valid()) {
             throw new \Exception('invalid');
         }
 
-        $import = new Import($entries, $sectionMapping, $userInput);
+        $import = new Import($entries, $userInput);
         $results = $import->run();
 
         return $this->renderTemplate('import/results/response', [

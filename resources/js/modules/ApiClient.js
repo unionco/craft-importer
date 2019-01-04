@@ -2,7 +2,7 @@ export class ApiClient {
     constructor() {
         this.uploadUrl = '/admin/import/upload';
         this.sectionsUrl = '/admin/import/preview-entries';
-        this.entryImportUrl = '/admin/import/submit';
+        this.importUrl = '/admin/import/submit';
         this.requests = null;
         this.index = 0;
     }
@@ -26,16 +26,16 @@ export class ApiClient {
             });
     }
 
-    entryRequest(requests) {
+    importRequest(requests) {
         this.requests = requests;
         this.index = 0;
-        window.Import.entryPreview.setSubmitHidden(true);
-        this.req(this.entryImportUrl, this.requests[this.index])
+        window.Import.importPreview.setSubmitHidden(true);
+        this.req(this.importUrl, this.requests[this.index])
             .then(resp => resp.text())
-            .then(data => this.entryRequestCallback(data))
+            .then(data => this.importRequestCallback(data))
             .catch(err => {
                 console.log(err);
-                window.Import.entryPreview.setSubmitHidden(false);
+                window.Import.importPreview.setSubmitHidden(false);
             })
             .finally(() => {
                 window.Import.ajaxSpinner.hide();
@@ -53,7 +53,7 @@ export class ApiClient {
         })
     }
 
-    entryRequestCallback(data) {
+    importRequestCallback(data) {
         window.Import.importResults.parse(data);
         this.index++;
 
@@ -63,7 +63,7 @@ export class ApiClient {
         if (this.index >= this.requests.length) {
             return Promise.resolve(true);
         }
-        return this.req(this.entryImportUrl, this.requests[this.index])
+        return this.req(this.importUrl, this.requests[this.index])
             .then(resp => resp.text())
             .then(data => this.entryRequestCallback(data));
     }

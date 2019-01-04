@@ -4,12 +4,6 @@
     justify-content: center;
     margin: 2rem auto;
     
-    //align-items: center;
-
-    // border-radius: $btnBorderRadius;
-    // border: 1px solid $hairlineColorAlpha;
-    // padding: 6px;
-
     &-sections {
         display: flex;
         flex-direction: row;
@@ -22,8 +16,6 @@
     &-entry {
         display: flex;
         flex-direction: column;
-        // justify-content: center;
-        // align-items: center;
         margin-bottom: 6px;
         width: 100%;
 

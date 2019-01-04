@@ -7,7 +7,7 @@ import ImportResults from './modules/ImportResults';
 import {
   ApiClient
 } from './modules/ApiClient';
-import EntryPreview from './modules/EntryPreview';
+import ImportPreview from './modules/ImportPreview';
 
 class Import {
   constructor() {
@@ -19,8 +19,8 @@ class Import {
     const sectionPreview = document.querySelector('#SectionPreview');
     this.sectionPreview = new SectionPreview(sectionPreview);
 
-    const entryPreview = document.querySelector('#EntryPreview');
-    this.entryPreview = new EntryPreview(entryPreview);
+    const importPreview = document.querySelector('#ImportPreview');
+    this.importPreview = new ImportPreview(importPreview);
 
     const importResults = document.querySelector('#ImportResults');
     this.importResults = new ImportResults(importResults);

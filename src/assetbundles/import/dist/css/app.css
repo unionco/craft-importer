@@ -91,22 +91,22 @@
         .SectionPreview-entry--field > .input > textarea {
           width: 90%; }
 
-.EntryPreview {
+.ImportPreview {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin: 2rem auto; }
-  .EntryPreview-sections {
+  .ImportPreview-sections {
     display: flex;
     flex-direction: row; }
-    .EntryPreview-sections > .section {
+    .ImportPreview-sections > .section {
       flex: 1 1 50%; }
-  .EntryPreview-entry {
+  .ImportPreview-entry {
     display: flex;
     flex-direction: column;
     margin-bottom: 6px;
     width: 100%; }
-    .EntryPreview-entry > .preview {
+    .ImportPreview-entry > .preview {
       display: flex;
       flex-direction: row;
       padding: 2rem;
@@ -114,33 +114,33 @@
       border-radius: 2px;
       border: 1px solid rgba(0, 0, 20, 0.1);
       background-color: #e3e5e8; }
-      .EntryPreview-entry > .preview > span {
+      .ImportPreview-entry > .preview > span {
         margin: 0 2rem; }
-        .EntryPreview-entry > .preview > span.pull-right {
+        .ImportPreview-entry > .preview > span.pull-right {
           margin-left: auto; }
-    .EntryPreview-entry > .content {
+    .ImportPreview-entry > .content {
       transition: max-height 300ms ease-in-out;
       max-height: 0;
       overflow: hidden; }
-      .EntryPreview-entry > .content.active {
+      .ImportPreview-entry > .content.active {
         max-height: 800px; }
-    .EntryPreview-entry--field {
+    .ImportPreview-entry--field {
       width: 100%;
       display: flex;
       flex-direction: row;
       padding: 6px; }
-      .EntryPreview-entry--field > .title {
+      .ImportPreview-entry--field > .title {
         min-width: 30%;
         text-align: center; }
-      .EntryPreview-entry--field > .input {
+      .ImportPreview-entry--field > .input {
         text-align: center;
         min-width: 70%; }
-        .EntryPreview-entry--field > .input > input[type='text'] {
+        .ImportPreview-entry--field > .input > input[type='text'] {
           border: 1px solid rgba(0, 0, 20, 0.1);
           border-radius: 2px;
           transition: border linear 50ms;
           width: 90%; }
-        .EntryPreview-entry--field > .input > textarea {
+        .ImportPreview-entry--field > .input > textarea {
           width: 90%; }
 
 .ImportResult {

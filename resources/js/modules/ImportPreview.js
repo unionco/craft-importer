@@ -1,5 +1,6 @@
-import EntryPreviewEntry from './entryPreview/Entry';
-export default class EntryPreview {
+import ImportPreviewEntry from './importPreview/Entry';
+
+export default class ImportPreview {
     constructor(node) {
         this.node = node;
         this.entries = [];
@@ -10,15 +11,15 @@ export default class EntryPreview {
 
     start(data) {
         this.node.innerHTML = data;
-        this.submitButton = this.node.querySelector('#EntryPreview-NextButton');
+        this.submitButton = this.node.querySelector('#ImportPreview-NextButton');
         this.submitButton.addEventListener('click', this.submit.bind(this));
         this.initEntries();
     }
 
     initEntries() {
         this.entries = [];
-        this.node.querySelectorAll('.EntryPreview-entry').forEach(entry => {
-            this.entries.push(new EntryPreviewEntry(entry));
+        this.node.querySelectorAll('.ImportPreview-entry').forEach(entry => {
+            this.entries.push(new ImportPreviewEntry(entry));
         });
     }
 
@@ -30,9 +31,8 @@ export default class EntryPreview {
         }
     }
     submit() {
-        //const serialized = document.querySelector('#EntryPreview-serialized').value;
-        const sectionMapping = this.node.querySelector('#EntryPreview-sectionMapping').value;
-        const entries = this.node.querySelector('#EntryPreview-entries').value;
+        const sectionMapping = this.node.querySelector('#ImportPreview-sectionMapping').value;
+        const entries = this.node.querySelector('#ImportPreview-entries').value;
         const requests = [];
         window.Import.ajaxSpinner.show('Processing entries...');
         this.entries.forEach(entry => {
@@ -72,6 +72,6 @@ export default class EntryPreview {
             requests.push(formData);
         });
 
-        window.Import.apiClient.entryRequest(requests);
+        window.Import.apiClient.importRequest(requests);
     }
 }

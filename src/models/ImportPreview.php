@@ -8,7 +8,7 @@ use craft\models\Section;
 use unionco\import\models\FileImport;
 use unionco\import\models\EntryImportPreview;
 
-class EntryPreview implements Serializable
+class ImportPreview implements Serializable
 {
     protected $sectionPreview;
     protected $sectionMapping;
@@ -42,9 +42,6 @@ class EntryPreview implements Serializable
     public function unserialize($serialized): void
     {
         $this->entries = unserialize($serialized);
-        //    $unserialized = unserialize($serialized);
-        // $this->sectionPreview = $unserialized['sectionPreview'];
-        // $this->entries = $unserialized['entries'];
     }
     
     public function getSectionMapping()

@@ -10,20 +10,21 @@
 
 namespace unionco\import;
 
-use unionco\import\services\Entry as EntryService;
-use unionco\import\models\Settings;
-
 use Craft;
 use craft\web\View;
-use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\console\Application as ConsoleApplication;
-use craft\web\UrlManager;
-use craft\events\RegisterUrlRulesEvent;
-use craft\events\RegisterTemplateRootsEvent;
 
 use yii\base\Event;
+use craft\base\Plugin;
+use craft\web\UrlManager;
+use craft\services\Plugins;
+use craft\events\PluginEvent;
+use unionco\import\models\Settings;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterTemplateRootsEvent;
+use unionco\import\services\Entry as EntryService;
+
+use craft\console\Application as ConsoleApplication;
+use unionco\import\twigextensions\ImportTwigExtension;
 
 /**
  * Craft plugins are very much like little applications in and of themselves. We’ve made
@@ -90,6 +91,8 @@ class Import extends Plugin
             $this->controllerNamespace = 'unionco\import\console\controllers';
         }
 
+        Craft::$app->view->twig->addExtension(new ImportTwigExtension());
+
         // Register our site routes
         Event::on(
             UrlManager::class,
@@ -133,6 +136,7 @@ class Import extends Plugin
             'entries' => \unionco\import\services\EntryService::class,
             'assets' => \unionco\import\services\AssetService::class,
             'tags' => \unionco\import\services\TagService::class,
+            'sections' => \unionco\import\services\SectionService::class,
         ]);
 
 /**

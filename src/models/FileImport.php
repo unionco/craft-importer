@@ -8,7 +8,7 @@ class FileImport
     public $file;
     protected $sections;
 
-    public function __construct($filePath)
+    public function __construct(string $filePath)
     {
         $this->file = $filePath;
         $this->entries = [];
