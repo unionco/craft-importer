@@ -11,7 +11,7 @@
         id: 'section-alias-' ~ index,
         label: 'Import [' ~ handle ~ '] As Section',
         name: 'sectionAlias[' ~ index ~ ']',
-        value: false,
+        value: value ?? false,
         required: true,
         options: options,
     }) }}

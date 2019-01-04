@@ -4,14 +4,18 @@ namespace unionco\import\models;
 
 use Serializable;
 use unionco\import\models\FileImport;
+use unionco\import\models\SectionMap;
+
 class SectionPreview implements Serializable
 {
     protected $fileImport;
     protected $existingSections;
     protected $newSections;
+    protected $sectionMap;
 
     public function __construct(FileImport $fileImport)
     {
+        $this->sectionMap = new SectionMap();
         $this->fileImport = $fileImport;
         $this->processFileImport();
     }
@@ -20,6 +24,7 @@ class SectionPreview implements Serializable
     {
         $this->existingSections = $this->fileImport->getExistingSections();
         $this->newSections = $this->fileImport->getNewSections();
+        SectionMap::findSuggestions($this->newSections, $this->sectionMap);
     }
 
     public function getFileImport(): FileImport
@@ -42,6 +47,11 @@ class SectionPreview implements Serializable
         return $this->existingSections;
     }
 
+    public function getSectionMap(): SectionMap
+    {
+        return $this->sectionMap;
+    }
+    
     public function serialize(): string
     {
         $data = [

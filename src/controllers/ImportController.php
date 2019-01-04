@@ -61,7 +61,6 @@ class ImportController extends Controller
         }
 
         $sectionPreview = new SectionPreview($import);
-
         $serializedSectionPreview = serialize($sectionPreview);
 
         return $this->renderTemplate('import/sectionPreview/response', [

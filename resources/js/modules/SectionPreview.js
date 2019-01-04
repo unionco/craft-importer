@@ -12,21 +12,33 @@ export default class SectionPreview {
         this.node.innerHTML = data;
         this.nextButton = this.node.querySelector('#SectionPreview-NextButton');
         this.nextButton.addEventListener('click', this.submit.bind(this));
+
+        // Get an initial section mapping (based on suggested)
+        this.node.querySelectorAll('[name*=sectionHandle]').forEach(input => {
+            let id = input.name.match(/\[(\d+)\]/);
+            if (!id || id.length < 2) {
+                return;
+            }
+            id = id[1];
+            const value = this.node.querySelector(`#section-alias-${id}`).value;
+            this.sectionMapping[input.value] = value;
+        });
         this.checkStatus();
-        this.mapSections();
+        this.sectionMapListeners();
     }
 
-    mapSections() {
+    sectionMapListeners() {
         this.node.querySelectorAll('select').forEach(element => {
             console.log(element);
-            element.addEventListener('change', e => {
-                const handle = this.node.querySelector('[name*=sectionHandle]').value;
-                this.sectionMapping[handle] = e.target.value;
-                
-                // Check if all sections are mapped
-                this.checkStatus();
-            });
+            element.addEventListener('change', e => this.updateSectionMap(e));
         })
+    }
+
+    updateSectionMap(e) {
+        const handle = this.node.querySelector('[name*=sectionHandle]').value;
+        this.sectionMapping[handle] = e.target.value;
+        // Check if all sections are mapped
+        this.checkStatus();
     }
 
     checkStatus() {
@@ -51,6 +63,7 @@ export default class SectionPreview {
     }
 
     submit() {
+        console.log('submit');
         const formData = new FormData();
         const serialized = document.querySelector('#SectionPreview-serialized').value;
         formData.append('serialized', serialized);
