@@ -121,7 +121,8 @@ class EntryService extends Component
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
 
-            if (!isset($params->fields->{$field->handle})) {
+            $importField = $parms->fields->fields->{$field->handle} ?? false;
+            if (!$importField) {
                 $this->log("Property {$field->handle} doesn't exist on entry", self::CONTEXT_ELEMENT);
             } else {
                 $this->log("Saving entry field: {$fieldType} -> {$field->handle}", self::CONTEXT_ELEMENT);
@@ -130,7 +131,7 @@ class EntryService extends Component
                         if ($relationships) {
                             $folderId = $field->resolveDynamicPathToFolderId();
                             $fieldId = $field->id;
-                            $assets = $params->fields->{$field->handle}->value;
+                            $assets = $importField->value;
                             $this->log("Populating {$fieldType} field {$field->handle} with: " . count($assets) . " assets", self::CONTEXT_ELEMENT);
                             $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
                                 return $assetService->save($folderId, $fieldId, $url);
@@ -140,7 +141,7 @@ class EntryService extends Component
                     case 'Matrix':
                         $this->log("Populating {$fieldType} field {$field->handle}", self::CONTEXT_ELEMENT);
 
-                        $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
+                        $matrix = $this->populateMatrixFields($importField, $field, $entry, $relationships);
                         $entry->{$field->handle} = $matrix ?? null;
                         break;
                     case 'Entries':
@@ -154,7 +155,7 @@ class EntryService extends Component
 
                                 $entry = $entryService->getEntry($e);
                                 return $entryService->updateOrCreate($entry);
-                            }, $params->fields->{$field->handle});
+                            }, $importField);
                         }
                         break;
                     case 'Categories':
@@ -167,16 +168,16 @@ class EntryService extends Component
 
                                 $category = $catService->getCategory($e);
                                 return $catService->updateOrCreate($category);
-                            }, $params->fields->{$field->handle} ?? []);
+                            }, $importField ?? []);
                             $this->log("Categories to save: " . count($cats), self::CONTEXT_ELEMENT);
                             $entry->{$field->handle} = $cats ?? [];
                         }
                         break;
                     case 'Tags':
-                        $entry->{$field->handle} = $tagService->saveTags($params->fields->{$field->handle});
+                        $entry->{$field->handle} = $tagService->saveTags($importField);
                         break;
                     case 'Table':
-                        $entry->{$field->handle} = json_encode($params->fields->{$field->handle});
+                        $entry->{$field->handle} = json_encode($importField);
                         break;
                     case 'Field':
                     case 'RichText':
@@ -185,15 +186,15 @@ class EntryService extends Component
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
                     case 'Date':
-                        $value = $params->fields->{$field->handle}->value;
+                        $value = $importField->value;
                         $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
                         break;
                     case 'IMapFieldType':
-                        $entry->{$field->handle} = $params->fields->{$field->handle};
+                        $entry->{$field->handle} = $importField;
                         break;
                     case 'Lightswitch':
-                        $value = (bool) $params->fields->{$field->handle}->value;
+                        $value = (bool) $importField->value;
                         $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
                 }
