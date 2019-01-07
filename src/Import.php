@@ -29,6 +29,11 @@ class Import extends Plugin
     public static $plugin;
     public $schemaVersion = '0.0.1';
 
+    public function getVersion()
+    {
+        return "0.0.2";
+    }
+    
     public function init()
     {
         parent::init();
