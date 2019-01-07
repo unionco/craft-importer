@@ -1,8 +1,8 @@
-# Import plugin for Craft CMS 3.x
+# Importer plugin for Craft CMS 3.x
 
 Import data from a Craft 2 JSON export file
 
-![Screenshot](resources/img/plugin-logo.png)
+![Screenshot](resources/img/importer.png)
 
 ## Requirements
 
@@ -18,7 +18,7 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require x/import
+        composer require unionco/import
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Import.
 
@@ -40,4 +40,4 @@ Some things to do, and ideas for potential features:
 
 * Release it
 
-Brought to you by [UNION](https://bitbucket.org/unionco)
+Brought to you by [UNION](https://github.com/unionco)
