@@ -121,7 +121,7 @@ class EntryService extends Component
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
 
-            $importField = $parms->fields->fields->{$field->handle} ?? false;
+            $importField = $params->fields->fields->{$field->handle} ?? $params->fields->{$field->handle} ?? false;
             if (!$importField) {
                 $this->log("Property {$field->handle} doesn't exist on entry", self::CONTEXT_ELEMENT);
             } else {
