@@ -2,6 +2,8 @@
 {% set entry = importPreviewEntry.entry %}
 <div class="ImportPreview-entry" id="entry-{{ entry.id}}">
     <div class="preview">
+        <span data-section></span>
+        <span data-entry-type></span>
         <span>ID: {{ entry.id}}</span>
         <span>Title: {{ entry.title }}</span>
         <span class="pull-right"> {{ forms.checkboxField({
@@ -53,7 +55,7 @@
             label: 'Author',
             name: 'author[' ~ entry.id ~ ']',
             options: entry.getAuthors,
-            value: entry.author.id,
+            value: entry.author.id ?? '',
             required: true,
         }) }}
 

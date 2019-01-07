@@ -2,7 +2,6 @@
     "name": "unionco/import",
     "description": "Import data from a Craft 2 JSON export file",
     "type": "craft-plugin",
-    "version": "0.0.1",
     "keywords": [
         "craft",
         "cms",

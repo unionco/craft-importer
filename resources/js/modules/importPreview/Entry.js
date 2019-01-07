@@ -1,16 +1,15 @@
-const camelCase = str => {
-    return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-        return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-    }).replace(/\s+/g, '');
-};
-
 export default class ImportPreviewEntry {
     constructor(node) {
         this.node = node;
         this.sectionSelect = this.node.querySelector('[name*=section]');
+        this.sectionPreview = this.node.querySelector('[data-section]')
         this.entryTypeSelect = this.node.querySelector('[name*=type]');
-        this.preview = node.children[0];
-        this.body = node.children[1];
+        this.entryTypePreview = this.node.querySelector('[data-entry-type]')
+        this.preview = this.node.querySelector('.preview');
+        this.body = this.node.querySelector('.content');
+
+        this.updateSectionPreview = this.updateSectionPreview.bind(this);
+        this.updateEntryTypePreview = this.updateEntryTypePreview.bind(this);
 
         if (this.preview && this.body) {
             this.preview.addEventListener('click', this.toggleExpand.bind(this));
@@ -18,6 +17,7 @@ export default class ImportPreviewEntry {
 
         this.initDropdowns();
         this.initMultiSelects();
+        this.initPreview();
     }
 
     toggleExpand() {
@@ -25,15 +25,17 @@ export default class ImportPreviewEntry {
     }
 
     initDropdowns() {
-        const dropdowns = document.querySelectorAll('select');
+        const dropdowns = this.node.querySelectorAll('select');
         if (dropdowns && dropdowns.length) {
-            Array.prototype.forEach.call(dropdowns, dropdown => {
+            dropdowns.forEach(dropdown => {
                 const namePrefix = dropdown.name.replace(/\[[0-9]+\]/, '');
                 switch (namePrefix) {
                     case 'section':
+                        dropdown.addEventListener('change', this.updateSectionPreview);
                         dropdown.addEventListener('change', this.updateType.bind(this));
                         break;
                     default:
+                        dropdown.addEventListener('change', this.updateEntryTypePreview);
                 }
             });
         }
@@ -44,6 +46,20 @@ export default class ImportPreviewEntry {
         Array.prototype.forEach.call(multiSelectOptions, opt => {
             opt.selected = true;
         });
+    }
+
+    initPreview() {
+        this.updateSectionPreview();
+        this.updateEntryTypePreview();
+    }
+
+    updateSectionPreview() {
+        this.sectionPreview.innerText = this.sectionSelect.selectedOptions[0].innerText;
+        this.updateEntryTypePreview();
+    }
+
+    updateEntryTypePreview() {
+        this.entryTypePreview.innerText = this.entryTypeSelect.selectedOptions[0].innerText;
     }
 
     updateType(e) {
@@ -57,12 +73,13 @@ export default class ImportPreviewEntry {
                     for (let i = 0; i < newTypes.length; i++) {
                         options += `<option value="${newTypes[i].id}">${newTypes[i].name}</option>`;
                     }
-                    this.type.innerHTML = options;
+                    this.entryTypeSelect.innerHTML = options;
                 } else {
                     console.log('Error');
-                    this.type.innerHTML = '';
+                    this.entryTypeSelect.innerHTML = '';
                 }
-            });
+            })
+            .then(() => this.updateEntryTypePreview());
     }
 
     toggleSites(e) {

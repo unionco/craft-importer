@@ -57,9 +57,9 @@ class FileImportEntry extends AbstractEntry implements Serializable
         if ($entryTypeHandle instanceof \stdClass) {
             $entryTypeHandle = $entryTypeHandle->handle;
         }
-        $entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle);
+        $entryTypes = Craft::$app->getSections()->getEntryTypesByHandle($entryTypeHandle ?? '');
         
-        return $entryTypes[0];
+        return $entryTypes[0] ?? null;
     }
 
     public function getAuthors(): array
@@ -90,7 +90,7 @@ class FileImportEntry extends AbstractEntry implements Serializable
             $this->section = Craft::$app->getSections()->getSectionById($input->section);
         }
 
-        if ($input->type !== intval($this->type->id)) {
+        if ($input->type !== intval($this->type->id ?? 0)) {
             $this->type = Craft::$app->getSections()->getEntryTypeById($input->type);
         }
 
