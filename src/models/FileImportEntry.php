@@ -38,7 +38,7 @@ class FileImportEntry extends AbstractEntry implements Serializable
         unset($data->author);
         unset($data->postDate);
         unset($data->expiryDate);
-        $this->fields = $data;
+        $this->fields = $data->fields ?? $data;
     }
 
     public static function matchSection($sectionHandle): ?\craft\models\Section
