@@ -79,6 +79,7 @@ class EntryService extends Component
             if ($entry) {
                 // $this->currentEntry->logMsg("Found existing entry: {$entry->id}");
                 $this->log("Found existing entry: {$entry->id}");
+                $this->log("Populating fields with new data");
             } else {
                 $entry = new Entry();
                 $entry->sectionId = $importEntry->section->id;
@@ -91,19 +92,20 @@ class EntryService extends Component
                 $entry->expiryDate = isset($importEntry->expiryDate)
                     ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
                     : null;
+            }
+        
+            $this->populateElementFields($entry, $importEntry, true);
 
-                $this->populateElementFields($entry, $importEntry, true);
-
-                try {
-                    Craft::$app->getElements()->saveElement($entry, false);
-                } catch (\Exception $e) {
-                    $this->currentEntry->setSuccess(false);
-                    $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
-                    return $this->currentEntry;
-                    //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
-                }
+            try {
+                Craft::$app->getElements()->saveElement($entry, false);
+            } catch (\Exception $e) {
+                $this->currentEntry->setSuccess(false);
+                $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
+                return $this->currentEntry;
+                //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
             }
         }
+
         $this->currentEntry->setSuccess(true);
         $this->currentEntry->setEntry($entry);
         return $this->currentEntry;
