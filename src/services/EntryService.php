@@ -58,7 +58,7 @@ class EntryService extends Component
     public function updateOrCreate(FileImportEntry $importEntry): EntryResult
     {
         $this->currentEntry = new EntryResult($importEntry);
-
+        
         foreach ($importEntry->sites as $siteId) {
             if ($siteId instanceof \craft\models\Site) {
                 $siteId = $siteId->id;
@@ -69,7 +69,7 @@ class EntryService extends Component
             if (isset($importEntry->section->id)) {
                 $entryQuery = $entryQuery->sectionId($importEntry->section->id);
             }
-
+            
             $entry = $entryQuery
                 ->siteId(intval($siteId))
                 ->slug($importEntry->slug)
@@ -90,10 +90,10 @@ class EntryService extends Component
                 $entry->enabledForSite = $importEntry->enabled;
                 $entry->postDate = DateTime::createFromFormat('Y-m-d', $importEntry->postDate);
                 $entry->expiryDate = isset($importEntry->expiryDate)
-                ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
-                : null;
+                    ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
+                    : null;
             }
-
+        
             $this->populateElementFields($entry, $importEntry, true);
 
             try {
@@ -119,6 +119,10 @@ class EntryService extends Component
         // services handle
         $assetService = Import::$plugin->assets;
         $tagService = Import::$plugin->tags;
+        
+        $assetService->logger = function($message) {
+            $this->log($message);
+        };
 
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
@@ -138,7 +142,7 @@ class EntryService extends Component
                             $imageIds = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
                                 $image = $assetService->save($folderId, $fieldId, $url);
                                 if ($image) {
-                                    $this->log("Image Result: " . $image->found ? "true" : "false", self::CONTEXT_ELEMENT);
+                                    $this->log("Image Result: {$image->found}", self::CONTEXT_ELEMENT);        
                                     return $image->assetId;
                                 } else {
                                     return null;
@@ -196,10 +200,15 @@ class EntryService extends Component
                     case 'Dropdown':
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
-                    case 'Date':
                         $value = $importField->value;
                         $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
+                        break;
+                    case 'Date':
+                        $value = $importField->value;
+                        $dateTime = DateTime::createFromFormat('Y-m-d', $value);
+                        $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
+                        $entry->{$field->handle} = $dateTime;
                         break;
                     case 'IMapFieldType':
                         $entry->{$field->handle} = $importField;
@@ -240,12 +249,12 @@ class EntryService extends Component
                 $this->log("Matrix Block Found: {$newSiteBlockType->handle}", self::CONTEXT_MATRIX);
 
                 $fields = $newSiteBlockType->getFields();
-
+                
                 $oldValue = MatrixBlock::find()
                     ->id($newSiteBlockType->id)
                     ->owner($entry)
                     ->one();
-
+                
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['type'] = $props;
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['enabled'] = true;
 
@@ -265,7 +274,7 @@ class EntryService extends Component
                                     $imageIds = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
                                         $image = $assetService->save($folderId, $fieldId, $url);
                                         if ($image) {
-                                            $this->log("Image Result: " . $image->found ? "true" : "false", self::CONTEXT_MATRIX);
+                                            $this->log("Image Result: {$image->found}", self::CONTEXT_MATRIX);        
                                             return $image->assetId;
                                         } else {
                                             return null;
@@ -293,7 +302,7 @@ class EntryService extends Component
                                                 return null;
                                             }
                                         }
-
+                                        
                                     }, $block->$props->{$blockField->handle});
 
                                     $newBlocks[$topLevelKey]['fields'][$blockField->handle] = $values;
