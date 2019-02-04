@@ -18,6 +18,7 @@ class AssetService extends Component
     protected $elementId = null;
     protected $query;
     protected $siteId;
+    public $logger;
 
     /**
      * 
@@ -69,7 +70,7 @@ class AssetService extends Component
             $image = $this->importFile($url, $folderId, $fieldId);
 
             if (isset($image->assetId)) {
-                return $image->assetId;
+                return $image;
             }
         } catch (\Exception $e) {
             // die($e->getMessage());
@@ -120,13 +121,27 @@ class AssetService extends Component
             throw new Exception('The target folder provided for uploading is not valid');
         }
 
+        $asset = Asset::find()
+            ->filename("%{$fileName}%")
+            ->folderId($folder->id)
+            ->one();
+        
+        if ($asset) {
+            return (object) [
+                'success' => true,
+                'found' => true,
+                'filename' => $asset->filename,
+                'assetId' => $asset->id,
+            ];
+        }
+
         $asset = new Asset();
         $asset->tempFilePath = $tempPath;
         $asset->filename = $fileName;
         $asset->newFolderId = $folder->id;
         $asset->volumeId = $folder->volumeId;
         $asset->avoidFilenameConflicts = true;
-        $asset->setScenario(Asset::SCENARIO_REPLACE);
+        $asset->setScenario(Asset::SCENARIO_CREATE);
 
         try {
             $result = Craft::$app->getElements()->saveElement($asset);
@@ -147,6 +162,7 @@ class AssetService extends Component
             return (object) [
                 'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                 'assetId' => $asset->id,
+                'found' => false,
                 'filename' => $asset->conflictingFilename,
                 'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null
             ];
@@ -154,6 +170,7 @@ class AssetService extends Component
 
         return (object) [
             'success' => true,
+            'found' => false,
             'filename' => $asset->filename,
             'assetId' => $asset->id,
         ];

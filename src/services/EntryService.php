@@ -43,7 +43,7 @@ class EntryService extends Component
     public $currentEntry;
     private $siteId;
 
-    private function log($msg, $context = self::CONTEXT_GLOBAL, $level = self::INFO, $siteId = null, $entry = null)
+    public function log($msg, $context = self::CONTEXT_GLOBAL, $level = self::INFO, $siteId = null, $entry = null)
     {
         if (!$siteId) {
             $siteId = $this->siteId;
@@ -58,7 +58,7 @@ class EntryService extends Component
     public function updateOrCreate(FileImportEntry $importEntry): EntryResult
     {
         $this->currentEntry = new EntryResult($importEntry);
-        
+
         foreach ($importEntry->sites as $siteId) {
             if ($siteId instanceof \craft\models\Site) {
                 $siteId = $siteId->id;
@@ -69,7 +69,7 @@ class EntryService extends Component
             if (isset($importEntry->section->id)) {
                 $entryQuery = $entryQuery->sectionId($importEntry->section->id);
             }
-            
+
             $entry = $entryQuery
                 ->siteId(intval($siteId))
                 ->slug($importEntry->slug)
@@ -79,6 +79,7 @@ class EntryService extends Component
             if ($entry) {
                 // $this->currentEntry->logMsg("Found existing entry: {$entry->id}");
                 $this->log("Found existing entry: {$entry->id}");
+                $this->log("Populating fields with new data");
             } else {
                 $entry = new Entry();
                 $entry->sectionId = $importEntry->section->id;
@@ -89,21 +90,22 @@ class EntryService extends Component
                 $entry->enabledForSite = $importEntry->enabled;
                 $entry->postDate = DateTime::createFromFormat('Y-m-d', $importEntry->postDate);
                 $entry->expiryDate = isset($importEntry->expiryDate)
-                    ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
-                    : null;
+                ? DateTime::createFromFormat('Y-m-d', $importEntry->expiryDate)
+                : null;
+            }
 
-                $this->populateElementFields($entry, $importEntry, true);
+            $this->populateElementFields($entry, $importEntry, true);
 
-                try {
-                    Craft::$app->getElements()->saveElement($entry, false);
-                } catch (\Exception $e) {
-                    $this->currentEntry->setSuccess(false);
-                    $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
-                    return $this->currentEntry;
-                    //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
-                }
+            try {
+                Craft::$app->getElements()->saveElement($entry, false);
+            } catch (\Exception $e) {
+                $this->currentEntry->setSuccess(false);
+                $this->log($e->getMessage(), self::CONTEXT_GLOBAL, self::ERROR);
+                return $this->currentEntry;
+                //$this->currentEntry->logMsg($e->getMessage(), EntryResult::ERROR);
             }
         }
+
         $this->currentEntry->setSuccess(true);
         $this->currentEntry->setEntry($entry);
         return $this->currentEntry;
@@ -121,7 +123,8 @@ class EntryService extends Component
         foreach ($fields as $field) {
             $fieldType = (new \ReflectionClass($field))->getShortName();
 
-            if (!isset($params->fields->{$field->handle})) {
+            $importField = $params->fields->fields->{$field->handle} ?? $params->fields->{$field->handle} ?? false;
+            if (!$importField) {
                 $this->log("Property {$field->handle} doesn't exist on entry", self::CONTEXT_ELEMENT);
             } else {
                 $this->log("Saving entry field: {$fieldType} -> {$field->handle}", self::CONTEXT_ELEMENT);
@@ -130,17 +133,26 @@ class EntryService extends Component
                         if ($relationships) {
                             $folderId = $field->resolveDynamicPathToFolderId();
                             $fieldId = $field->id;
-                            $assets = $params->fields->{$field->handle}->value;
+                            $assets = $importField->value;
                             $this->log("Populating {$fieldType} field {$field->handle} with: " . count($assets) . " assets", self::CONTEXT_ELEMENT);
-                            $entry->{$field->handle} = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
-                                return $assetService->save($folderId, $fieldId, $url);
+                            $imageIds = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                                $image = $assetService->save($folderId, $fieldId, $url);
+                                if ($image) {
+                                    $this->log("Image Result: " . $image->found ? "true" : "false", self::CONTEXT_ELEMENT);
+                                    return $image->assetId;
+                                } else {
+                                    return null;
+                                }
                             }, $assets);
+                            if ($imageIds && !in_array(null, array_values($imageIds))) {
+                                $entry->{$field->handle} = $imageIds;
+                            }
                         }
                         break;
                     case 'Matrix':
                         $this->log("Populating {$fieldType} field {$field->handle}", self::CONTEXT_ELEMENT);
 
-                        $matrix = $this->populateMatrixFields($params->fields->{$field->handle}, $field, $entry, $relationships);
+                        $matrix = $this->populateMatrixFields($importField, $field, $entry, $relationships);
                         $entry->{$field->handle} = $matrix ?? null;
                         break;
                     case 'Entries':
@@ -154,7 +166,7 @@ class EntryService extends Component
 
                                 $entry = $entryService->getEntry($e);
                                 return $entryService->updateOrCreate($entry);
-                            }, $params->fields->{$field->handle});
+                            }, $importField);
                         }
                         break;
                     case 'Categories':
@@ -167,16 +179,16 @@ class EntryService extends Component
 
                                 $category = $catService->getCategory($e);
                                 return $catService->updateOrCreate($category);
-                            }, $params->fields->{$field->handle} ?? []);
+                            }, $importField ?? []);
                             $this->log("Categories to save: " . count($cats), self::CONTEXT_ELEMENT);
                             $entry->{$field->handle} = $cats ?? [];
                         }
                         break;
                     case 'Tags':
-                        $entry->{$field->handle} = $tagService->saveTags($params->fields->{$field->handle});
+                        $entry->{$field->handle} = $tagService->saveTags($importField);
                         break;
                     case 'Table':
-                        $entry->{$field->handle} = json_encode($params->fields->{$field->handle});
+                        $entry->{$field->handle} = json_encode($importField);
                         break;
                     case 'Field':
                     case 'RichText':
@@ -185,15 +197,15 @@ class EntryService extends Component
                     case 'BrandColorsFieldType':
                     case 'ParentChannelFieldType':
                     case 'Date':
-                        $value = $params->fields->{$field->handle}->value;
+                        $value = $importField->value;
                         $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
                         break;
                     case 'IMapFieldType':
-                        $entry->{$field->handle} = $params->fields->{$field->handle};
+                        $entry->{$field->handle} = $importField;
                         break;
                     case 'Lightswitch':
-                        $value = (bool) $params->fields->{$field->handle}->value;
+                        $value = (bool) $importField->value;
                         $this->log("Populating {$fieldType} field {$field->handle} with: {$value}", self::CONTEXT_ELEMENT);
                         $entry->{$field->handle} = $value;
                 }
@@ -228,12 +240,12 @@ class EntryService extends Component
                 $this->log("Matrix Block Found: {$newSiteBlockType->handle}", self::CONTEXT_MATRIX);
 
                 $fields = $newSiteBlockType->getFields();
-                
+
                 $oldValue = MatrixBlock::find()
                     ->id($newSiteBlockType->id)
                     ->owner($entry)
                     ->one();
-                
+
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['type'] = $props;
                 $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['enabled'] = true;
 
@@ -241,20 +253,27 @@ class EntryService extends Component
                     $fieldType = (new \ReflectionClass($blockField))->getShortName();
 
                     if (!isset($block->$props->{$blockField->handle})) {
-                        $this->log("Property {$field->handle} doesn't exist on entry: {$entry->title}", self::CONTEXT_MATRIX);
+                        $this->log("Property {$blockField->handle} doesn't exist on entry: {$entry->title}", self::CONTEXT_MATRIX);
                     } else {
                         switch ($fieldType) {
                             case 'Assets':
                                 if ($relationships) {
                                     $folderId = $blockField->resolveDynamicPathToFolderId();
                                     $fieldId = $blockField->id;
-                                    $values = $block->image->images->value ?? [];
+                                    $values = $block->$props->{$blockField->handle}->value ?? [];
                                     $this->log("Populating {$fieldType} field {$blockField->handle} with: " . count($values) . " assets", self::CONTEXT_MATRIX);
-                                    $value = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
-                                        return $assetService->save($folderId, $fieldId, $url);
+                                    $imageIds = array_map(function ($url) use ($folderId, $fieldId, $assetService) {
+                                        $image = $assetService->save($folderId, $fieldId, $url);
+                                        if ($image) {
+                                            $this->log("Image Result: " . $image->found ? "true" : "false", self::CONTEXT_MATRIX);
+                                            return $image->assetId;
+                                        } else {
+                                            return null;
+                                        }
                                     }, $values);
-                                    $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $value;
-                                    //}, $block->$props->{$blockField->handle});
+                                    if ($imageIds && !in_array(null, array_values($imageIds))) {
+                                        $newBlocks[$oldValue->id ?? ("new" . ($key + 1))]['fields'][$blockField->handle] = $imageIds;
+                                    }
                                 }
                                 break;
                             case 'Entries':
@@ -274,7 +293,7 @@ class EntryService extends Component
                                                 return null;
                                             }
                                         }
-                                        
+
                                     }, $block->$props->{$blockField->handle});
 
                                     $newBlocks[$topLevelKey]['fields'][$blockField->handle] = $values;
